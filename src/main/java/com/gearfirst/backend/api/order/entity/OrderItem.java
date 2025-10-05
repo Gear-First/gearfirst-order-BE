@@ -1,4 +1,4 @@
-package com.gearfirst.backend.api.order.domain.entity;
+package com.gearfirst.backend.api.order.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -13,20 +13,22 @@ import lombok.NoArgsConstructor;
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="order_id")
-    private Long orderId;
+    @Column(name="order_item_id")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private PurchaseOrder purchaseOrder;
 
+    @Column(nullable = false)
     private int quantity;           //요청 수량
-    @Column(name="inventory_id")
+    @Column(name="inventory_id",nullable = false)
     private long inventoryId;       //재고 id
-    @Column(name="inventory_name")
+    @Column(name="inventory_name",nullable = false, length = 100)
     private String inventoryName;   //부품 이름
+    @Column(nullable = false)
     private int price;              //가격
-    @Column(name="total_price")
+    @Column(name="total_price",nullable = false)
     private int totalPrice;         //총 가격
 
 

@@ -1,6 +1,6 @@
-package com.gearfirst.backend.api.order.domain.entity;
+package com.gearfirst.backend.api.order.entity;
 
-import com.gearfirst.backend.api.branch.domain.entity.Branch;
+import com.gearfirst.backend.api.branch.entity.Branch;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -17,19 +17,20 @@ public class PurchaseOrder extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="order_id")
-    private Long orderId;
+    private Long id;
 
     //@Column(name="request_date", nullable = false)
     //private LocalDate requestDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus status;
 
-    @Column(name="total_price")
+    @Column(name="total_price", nullable = false)
     private int totalPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id")
+    @JoinColumn(name = "branch_id",nullable = false)
     private Branch branch;
 
 
@@ -37,6 +38,7 @@ public class PurchaseOrder extends BaseTimeEntity {
     public PurchaseOrder(Branch branch){
         this.status = OrderStatus.PENDING; //기본 상태 승인 대기
         this.branch = branch;
+        this.totalPrice = 0;
     }
 
     public void updateTotalPrice(int totalPrice){
