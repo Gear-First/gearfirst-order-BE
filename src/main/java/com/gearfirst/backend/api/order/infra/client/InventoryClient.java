@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 // inventory 서비스의 주소와 prefix
 @FeignClient(name = "gearfirst-inventory", url = "http://localhost:8081")
 public interface InventoryClient {
-    @GetMapping("/api/v1/inventory/internal/inventories/{id}")
+    @GetMapping("/internal/inventories/{id}")
     InventoryResponse getInventoryById(@PathVariable("id") Long id);
 
 
