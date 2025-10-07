@@ -37,7 +37,6 @@ out/
 .vscode/
 
 *.yml
-*.properties
 
 # GitHub Actions workflows는 무시하지 않음
 !.github/
