@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/purchase-orders")
+@RequestMapping("/api/v1/purchase-orders/mock")
 @Tag(name = "Mock Purchase Order API", description = "대리점 발주 요청/조회 Mock API")
 public class PurchaseOrderMockController {
     /**

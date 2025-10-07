@@ -1,5 +1,6 @@
 package com.gearfirst.backend.api.order.dto;
 
+import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,4 +16,8 @@ public class PurchaseOrderResponse {
     private int totalPrice;
     private String status;
     private LocalDateTime createdAt;
+
+//    public static PurchaseOrderResponse fromEntity(PurchaseOrder order){
+//        List<OrderItemResponse> itemResponses = order.get
+//    }
 }
