@@ -17,7 +17,4 @@ public class PurchaseOrderResponse {
     private String status;
     private LocalDateTime createdAt;
 
-//    public static PurchaseOrderResponse fromEntity(PurchaseOrder order){
-//        List<OrderItemResponse> itemResponses = order.get
-//    }
 }

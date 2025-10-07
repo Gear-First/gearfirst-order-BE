@@ -7,6 +7,8 @@ import com.gearfirst.backend.api.order.dto.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
+import com.gearfirst.backend.api.order.infra.client.InventoryClient;
+import com.gearfirst.backend.api.order.infra.dto.InventoryResponse;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.exception.NotFoundException;
@@ -24,6 +26,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final BranchRepository branchRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final InventoryClient inventoryClient;
 
     /**
      * 발주 요청 생성
@@ -35,27 +38,50 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_BRANCH_EXCEPTION.getMessage()));
         //발주 엔티티 생성
         PurchaseOrder order = new PurchaseOrder(branch);
-
-        //품목 엔티티 생성
-        List<OrderItem> orderItems = request.getItems().stream()
-                .map(i -> new OrderItem(order, i.getInventoryId(), i.getInventoryName(), i.getPrice(), i.getQuantity()))
-                .toList();
-
-        //총금액 계산 및 저장
-        int totalPrice = orderItems.stream()
-                .mapToInt(OrderItem::getTotalPrice)
-                .sum();
-        order.updateTotalPrice(totalPrice);
-
         purchaseOrderRepository.save(order);
-        orderItems.forEach(orderItemRepository::save);
 
-        //응답 DTO로 변환
-        List<OrderItemResponse> itemResponses = orderItems.stream()
-                .map(item -> new OrderItemResponse(item.getInventoryName(), item.getQuantity(), item.getPrice(), item.getTotalPrice()))
+        //품목 생성
+        List<OrderItem> orderItems = request.getItems().stream()
+                .map(i -> {
+                    //재고 데이터 조회
+                    InventoryResponse inventory = inventoryClient.getInventoryById(i.getInventoryId());
+                    //단가/이름을 db 에서 가져온 값으로 대체
+                    int price = inventory.getPrice();
+                    String name = inventory.getInventoryName();
+
+                    // OrderItem 생성
+                    return new OrderItem(order, i.getInventoryId(), name, price, i.getQuantity());
+                })
                 .toList();
-        return new PurchaseOrderResponse(order.getId(), branch.getBranchName(), itemResponses, totalPrice, order.getStatus().name(), order.getCreatedAt());
-    }
+
+            // 총금액 계산 및 저장
+            int totalPrice = orderItems.stream()
+                    .mapToInt(OrderItem::getTotalPrice)
+                    .sum();
+            order.updateTotalPrice(totalPrice);
+
+            //  주문/아이템 저장
+            orderItems.forEach(orderItemRepository::save);
+
+            //  응답 DTO 변환
+            List<OrderItemResponse> itemResponses = orderItems.stream()
+                    .map(item -> new OrderItemResponse(
+                            item.getInventoryName(),
+                            item.getQuantity(),
+                            item.getPrice(),
+                            item.getTotalPrice()
+                    ))
+                    .toList();
+
+            return new PurchaseOrderResponse(
+                    order.getId(),
+                    branch.getBranchName(),
+                    itemResponses,
+                    totalPrice,
+                    order.getStatus().name(),
+                    order.getCreatedAt()
+            );
+   }
 
     /**
      * 발주 목록 조회
