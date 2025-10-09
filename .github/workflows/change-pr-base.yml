@@ -1,16 +1,20 @@
 name: Change PR base to dev if main
 
+# pr이 생성되거나 수정될 때마다 이 워크플로우가 트리거
 on:
   pull_request:
     types: [opened, reopened, edited]
 
+# GitHub Actions의 실행 환경(가상머신)을 지정, 여기서는 Ubuntu 최신 버전에서 실행
 jobs:
   change-base:
     runs-on: ubuntu-latest
+    # 현재 PR의 **기준 브랜치(base branch)**가 'main' 이고 PR 제목에 '[MAIN]'이 포함되어 있지 않을 때만 실행
     if: >
       github.event.pull_request.base.ref == 'main' &&
       !contains(github.event.pull_request.title, '[MAIN]')
 
+    # 만약 기준 브랜치가 main이면 GitHub REST API를 이용해 PR의 base 브랜치를 dev로 수정
     steps:
       - name: Change base to dev
         uses: actions/github-script@v7
