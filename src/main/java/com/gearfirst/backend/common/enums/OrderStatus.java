@@ -4,7 +4,7 @@ public enum OrderStatus {
     PENDING("승인 대기"),
     APPROVED("승인 완료"),
     REJECTED("반려됨"),
-    SHIPPED("출고 완료"),
+    SHIPPED("출고 중"),
     COMPLETED("납품 완료");
 
     private final String description;

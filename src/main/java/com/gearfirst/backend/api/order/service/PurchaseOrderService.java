@@ -14,4 +14,8 @@ public interface PurchaseOrderService {
     List<PurchaseOrderResponse> getPurchaseOrdersByStatus(Long branchId, String status);
     //발주 상세 조회
     PurchaseOrderResponse getPurchaseOrderDetail(Long orderId);
+    //발주 승인
+    void approveOrder(Long orderId, Long warehouseId);
+    //발주 반려
+    void rejectOrder(Long orderId);
 }

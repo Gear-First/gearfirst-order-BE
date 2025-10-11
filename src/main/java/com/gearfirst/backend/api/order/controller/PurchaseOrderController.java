@@ -54,4 +54,17 @@ public class PurchaseOrderController {
         PurchaseOrderResponse detail = purchaseOrderService.getPurchaseOrderDetail(orderId);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,detail);
     }
+
+    @Operation(summary = "발주 승인", description = "본사에서 발주를 승인합니다.")
+    @PatchMapping("/{orderId}/{warehouseId}/approve")
+    public ResponseEntity<ApiResponse<Void>> approve(@PathVariable Long orderId, @PathVariable Long warehouseId){
+        purchaseOrderService.approveOrder(orderId, warehouseId);
+        return ApiResponse.success_only(SuccessStatus.APPROVE_PURCHASE_SUCCESS);
+    }
+    @Operation(summary = "발주 반려", description = "본사에서 발주를 반려합니다.")
+    @PatchMapping("/{orderId}/reject")
+    public ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long orderId){
+        purchaseOrderService.rejectOrder(orderId);
+        return ApiResponse.success_only(SuccessStatus.REJECT_PURCHASE_SUCCESS);
+    }
 }
