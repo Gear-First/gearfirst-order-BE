@@ -16,7 +16,7 @@ public enum ErrorStatus {
 
     /** 404 NOT_FOUND */
     NOT_FOUND_MEMBER_EXCEPTION(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 입니다."),
-    NOT_FOUND_ORDER_EXCEPTION(HttpStatus.NOT_FOUND, "존재하지 않는 주문 입니다."),
+    NOT_FOUND_ORDER_EXCEPTION(HttpStatus.NOT_FOUND, "해당 발주를 찾을 수 없습니다.."),
     NOT_FOUND_BRANCH_EXCEPTION(HttpStatus.NOT_FOUND, "존재하지 않는 대리점입니다."),
 
     /** 500 SERVER_ERROR */

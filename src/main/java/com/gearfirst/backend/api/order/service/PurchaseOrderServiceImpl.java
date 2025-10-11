@@ -9,6 +9,7 @@ import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.InventoryClient;
 import com.gearfirst.backend.api.order.infra.dto.InventoryResponse;
+import com.gearfirst.backend.api.order.infra.dto.OutboundRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.enums.OrderStatus;
@@ -29,7 +30,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final BranchRepository branchRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final OrderItemRepository orderItemRepository;
-    private final InventoryClient inventoryClient;
+    private final InventoryClient inventoryClient; // Feign Client (inventory-service 연결)
 
     /**
      * 발주 요청 생성
@@ -202,5 +203,35 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .map(item -> new OrderItemResponse(item.getInventoryName(),item.getQuantity(), item.getPrice(), item.getTotalPrice()))
                 .toList();
         return new PurchaseOrderResponse(order.getId(), order.getBranch().getBranchName(),itemResponses, order.getTotalPrice(), order.getStatus().name(), order.getCreatedAt());
+    }
+
+    /**
+     * 발주 승인
+     */
+    @Override
+    public void approveOrder(Long orderId, Long warehouseId) {
+        //발주서 조회
+        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+        //상태 변경
+        order.approve();
+        //발주 품목 조회
+        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
+        //출고 명령 생성 요청(Inventory 서비스로 전송)
+        OutboundRequest request = OutboundRequest.from(order,items,warehouseId);
+        //Inventory 서비스로 전달
+        inventoryClient.createOutboundOrder(request);
+    }
+
+    /**
+     * 발주 반려
+     */
+    @Override
+    public void rejectOrder(Long orderId) {
+        //발주서 조회
+        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+        //상태변경
+        order.reject();
     }
 }
