@@ -13,7 +13,7 @@ public class InventoryResponse {
 //    private String warehouse;
 //    private String status;
 //    private int price;
-    private Long id;
+    private Long inventoryId;
     private String inventoryName;
     private String inventoryCode;
     private int availableStock;

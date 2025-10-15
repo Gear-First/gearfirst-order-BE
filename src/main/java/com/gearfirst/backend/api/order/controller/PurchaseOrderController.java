@@ -2,6 +2,8 @@ package com.gearfirst.backend.api.order.controller;
 
 import com.gearfirst.backend.api.order.dto.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.PurchaseOrderResponse;
+import com.gearfirst.backend.api.order.infra.dto.InventoryResponse;
+import com.gearfirst.backend.api.order.infra.dto.VehicleResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
 import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
@@ -20,6 +22,26 @@ import java.util.List;
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+
+    @Operation(summary = "엔지니어가 차량 검색", description = "대리점에서 엔지니어가 차량번호로 검색합니다.")
+    @GetMapping("/vehicles")
+    public ResponseEntity<ApiResponse<List<VehicleResponse>>> getEngineerVehicles(
+            @RequestParam Long engineerId,
+            @RequestParam(required = false) String keyword
+    ) {
+        List<VehicleResponse> list = purchaseOrderService.findVehiclesByEngineer(engineerId, keyword);
+        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, list);
+    }
+
+    @Operation(summary = "차량에 맞는 부품 검색", description = "대리점에서 엔지니어가 부품을 검색합니다.")
+    @GetMapping("/inventories")
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoriesByCarModel(
+            @RequestParam Long carModelId,
+            @RequestParam(required = false) String keyword
+    ) {
+        List<InventoryResponse> list = purchaseOrderService.findInventoriesByCarModel(carModelId, keyword);
+        return ApiResponse.success(SuccessStatus.SEARCH_INVENTORY_SUCCESS, list);
+    }
 
     @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
     @PostMapping
