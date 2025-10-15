@@ -7,5 +7,8 @@ import lombok.Setter;
 @Setter
 public class OrderItemRequest {
     private Long inventoryId;
+    private String inventoryName;
+    private String inventoryCode;
+    private int price;
     private int quantity;
 }

@@ -9,7 +9,9 @@ import java.util.List;
 @Getter
 @Setter
 public class PurchaseOrderRequest {
+    private String vehicleNumber;
+    private String vehicleModel;
+    private Long engineerId;
     private Long branchId;
-    //private LocalDate requestDate;
     private List<OrderItemRequest> items;
 }
