@@ -1,8 +1,12 @@
 name: Auto Close Issues on dev merge
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
 
 jobs:
   close-issues:
@@ -17,7 +21,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const prBody = context.payload.pull_request.body;
+            const prBody = context.payload.pull_request.body || '';
             const issueLines = prBody.split('\n');
 
             // 클로징 키워드가 있는 줄에서만 이슈 번호 추출
