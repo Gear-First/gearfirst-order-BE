@@ -1,0 +1,20 @@
+language: "ko-KR"
+reviews:  # 작동 정책
+  profile: "chill"                 # 리뷰 스타일(친근함 정도)
+  request_changes_workflow: false  # 리뷰에서 "Change requested" 플래그 달지 여부
+  high_level_summary: true         # 요약 리뷰를 남길지 여부
+  poem: false                      # (이스터에그) 시 형태 리뷰 금지
+  review_status: true              # 리뷰 완료 상태 표시
+  auto_review:
+    enabled: true                  # PR 생성 시 자동 리뷰 활성화
+    drafts: false                  # draft PR은 리뷰하지 않음
+    branches:
+      include:
+        - main
+        - dev
+
+review:   # 품질 기준
+  rules:
+    - avoid_business_logic_in_controller # Controller에 비즈니스 로직 포함 금지
+  #  - prefer_domain_service_for_logic    # 복잡한 로직은 DomainService로 이동 권장
+    - use_response_dto_not_entity        # Controller 응답 시 Entity 직접 노출 금지
