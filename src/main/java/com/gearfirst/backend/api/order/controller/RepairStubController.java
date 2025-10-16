@@ -1,6 +1,5 @@
 package com.gearfirst.backend.api.order.controller;
 
-import com.gearfirst.backend.api.order.dto.response.RepairResponse;
 import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

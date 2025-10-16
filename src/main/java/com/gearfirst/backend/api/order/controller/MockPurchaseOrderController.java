@@ -9,13 +9,11 @@ import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@RestController
+@RequestMapping("/api/v1/mock-purchase-orders")
 public class MockPurchaseOrderController {
 
     @Operation(summary = "가짜 차량 목록 검색", description = "엔지니어 ID로 차량 리스트를 반환합니다 (목 데이터)")
