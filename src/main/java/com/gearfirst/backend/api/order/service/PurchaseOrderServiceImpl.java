@@ -1,15 +1,16 @@
 package com.gearfirst.backend.api.order.service;
 
-import com.gearfirst.backend.api.order.dto.PurchaseOrderRequest;
-import com.gearfirst.backend.api.order.dto.PurchaseOrderResponse;
+import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
+import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
+import com.gearfirst.backend.api.order.dto.response.ReceiptResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.InventoryClient;
 import com.gearfirst.backend.api.order.infra.client.RepairClient;
-import com.gearfirst.backend.api.order.infra.dto.InventoryResponse;
-import com.gearfirst.backend.api.order.infra.dto.OutboundRequest;
-import com.gearfirst.backend.api.order.dto.RepairResponse;
-import com.gearfirst.backend.api.order.infra.dto.VehicleResponse;
+import com.gearfirst.backend.api.order.infra.client.dto.InventoryResponse;
+import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
+import com.gearfirst.backend.api.order.dto.response.RepairResponse;
+import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.enums.OrderStatus;
@@ -33,14 +34,25 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     //private final UserClient userClient;
 
     /**
-     * 차량 검색
+     * 발주 요청 시 엔지니어가 접수한 차량 리스트 조회
      */
     @Override
-    public List<VehicleResponse> findVehiclesByEngineer(Long engineerId, String keyword){
-        List<RepairResponse> repairs = repairClient.getRepairsByEngineer(engineerId, keyword);
+    public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
+        List<ReceiptCarResponse> repairs = repairClient.getRepairsByEngineer(engineerId);
 
         return repairs.stream()
-                .map(r -> new VehicleResponse(r.getVehicleNumber(), r.getVehicleModel(),r.getStatus()))
+                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
+                .toList();
+    }
+    /**
+     * 발주 요청 시 엔지니어가 접수한 차량 검색("12가","가3456","3456","12")
+     */
+    @Override
+    public List<ReceiptCarResponse> searchReceiptsByEngineer(Long engineerId, String keyword){
+        List<ReceiptCarResponse> repairs = repairClient.searchRepairsByEngineer(engineerId, keyword);
+
+        return repairs.stream()
+                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
                 .toList();
     }
 
@@ -50,18 +62,20 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     public List<InventoryResponse> findInventoriesByCarModel(Long carModelId, String keyword){
         List<InventoryResponse> inventories = inventoryClient.getInventoriesByCarModel(carModelId, keyword);
-        return inventories;
+
+        return inventories.stream()
+                .map(i -> new InventoryResponse(i.getInventoryId(),i.getInventoryName(),i.getInventoryCode(),i.getPrice()))
+                .toList();
     }
 
     /**
      * 발주 요청 생성
      */
     @Override
-    public PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request) {
+    public void createPurchaseOrder(PurchaseOrderRequest request) {
         //발주 엔티티 생성
         PurchaseOrder order = PurchaseOrder.builder()
                 .vehicleNumber(request.getVehicleNumber())
-                .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
                 .branchId(request.getBranchId())
                 .build();
@@ -89,7 +103,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             orderItemRepository.saveAll(orderItems);
 
             //  응답 DTO 변환
-            return PurchaseOrderResponse.from(order,orderItems);
    }
 
     //본사용 전체 조회(모든 대리점)

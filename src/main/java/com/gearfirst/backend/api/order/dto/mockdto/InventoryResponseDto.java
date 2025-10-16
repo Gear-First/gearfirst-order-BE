@@ -1,4 +1,4 @@
-package com.gearfirst.backend.api.order.infra.dto;
+package com.gearfirst.backend.api.order.dto.mockdto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

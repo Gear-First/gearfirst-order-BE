@@ -1,6 +1,6 @@
 package com.gearfirst.backend.api.order.service;
 
-import com.gearfirst.backend.api.order.dto.RepairResponse;
+import com.gearfirst.backend.api.order.dto.response.RepairResponse;
 import com.gearfirst.backend.api.order.infra.client.RepairClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,7 +12,6 @@ import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
