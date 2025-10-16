@@ -8,12 +8,14 @@ import com.gearfirst.backend.api.order.dto.mockdto.VehicleResponseDto;
 import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
 @RequestMapping("/api/v1/mock-purchase-orders")
+@Tag(name = "Purchase Order MOCK API", description = "발주 요청/조회 가짜 API")
 public class MockPurchaseOrderController {
 
     @Operation(summary = "가짜 차량 목록 검색", description = "엔지니어 ID로 차량 리스트를 반환합니다 (목 데이터)")

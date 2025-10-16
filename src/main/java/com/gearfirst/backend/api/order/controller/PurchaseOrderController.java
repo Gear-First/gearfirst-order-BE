@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/purchase-orders")
 @AllArgsConstructor
-@Tag(name = "Purchase Order API", description = "대리점 발주 요청/조회 API")
+@Tag(name = "Purchase Order API", description = "발주 요청/조회 API")
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
@@ -90,7 +90,7 @@ public class PurchaseOrderController {
     }
 
     /**
-     * 본사 상태별 조회
+     * TODO:본사 상태별 조회
      */
 //    @Operation(summary = "본사 발주 상태별 조회", description = "승인대기, 승인완료, 반려, 출고중, 납품완료, 취소 상태별로 발주 내역을 조회합니다.")
 //    @GetMapping("/head/status")
