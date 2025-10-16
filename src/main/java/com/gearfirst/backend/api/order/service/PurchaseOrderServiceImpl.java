@@ -1,6 +1,7 @@
 package com.gearfirst.backend.api.order.service;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
+import com.gearfirst.backend.api.order.dto.response.HeadquarterPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.ReceiptResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
@@ -105,19 +106,21 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             //  응답 DTO 변환
    }
 
-    //본사용 전체 조회(모든 대리점)
-    @Override
-    @Transactional(readOnly = true)
-    public List<PurchaseOrderResponse> getAllPurchaseOrders(){
-        List<PurchaseOrder> orders = purchaseOrderRepository.findAllByOrderByRequestDateDesc();
-
-        return orders.stream()
-                .map(order -> {
-                    List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-                    return PurchaseOrderResponse.from(order, items);
-                })
-                .toList();
-    }
+    /**
+     * TODO:본사용 전체 조회(모든 대리점)
+     */
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<HeadquarterPurchaseOrderResponse> getAllPurchaseOrders(){
+//        List<PurchaseOrder> orders = purchaseOrderRepository.findAllByOrderByRequestDateDesc();
+//
+//        return orders.stream()
+//                .map(order -> {
+//                    List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
+//                    return HeadquarterPurchaseOrderResponse.from(order, items);
+//                })
+//                .toList();
+//    }
 
     //엔지니어용 발주 목록 전체 조회
     @Override
@@ -136,14 +139,14 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseOrderResponse> getBranchPurchaseOrdersByFilter(Long branchId, String filterType) {
+    public List<PurchaseOrderResponse> getBranchPurchaseOrdersByFilter(Long branchId, Long engineerId, String filterType) {
         List<OrderStatus> statusList = switch (filterType.toLowerCase()){
             case "ready" -> List.of(OrderStatus.PENDING, OrderStatus.APPROVED, OrderStatus.SHIPPED);
             case "completed" -> List.of(OrderStatus.COMPLETED);
             case "cancelled" -> List.of(OrderStatus.REJECTED,OrderStatus.CANCELLED);
             default -> throw new IllegalArgumentException("유효하지 않은 필터 타입입니다. (ready, completed, cancelled 중하나여야 합니다.)");
         };
-        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchIdAndStatusInOrderByRequestDateDesc(branchId, statusList);
+        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchIdAndEngineerIdAndStatusInOrderByRequestDateDesc(branchId, engineerId, statusList);
 
         return orders.stream()
                 .map(order -> {
@@ -153,20 +156,22 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .toList();
     }
 
-    //본사 상태별 조회
-    @Override
-    public List<PurchaseOrderResponse> getHeadPurchaseOrdersByStatus(String status){
-        OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
-        List<PurchaseOrder> orders =
-                purchaseOrderRepository.findByStatusOrderByRequestDateDesc(orderStatus);
-
-        return orders.stream()
-                .map(order -> {
-                    List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-                    return PurchaseOrderResponse.from(order, items);
-                })
-                .toList();
-    }
+    /**
+     * TODO: 본사 상태별 조회
+     */
+//    @Override
+//    public List<HeadquarterPurchaseOrderResponse> getHeadPurchaseOrdersByStatus(String status){
+//        OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
+//        List<PurchaseOrder> orders =
+//                purchaseOrderRepository.findByStatusOrderByRequestDateDesc(orderStatus);
+//
+//        return orders.stream()
+//                .map(order -> {
+//                    List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
+//                    return HeadquarterPurchaseOrderResponse.from(order, items);
+//                })
+//                .toList();
+//    }
 
 
     /**
@@ -174,8 +179,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     @Transactional(readOnly = true)
-    public PurchaseOrderResponse getPurchaseOrderDetail(Long orderId) {
-        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+    public PurchaseOrderResponse getPurchaseOrderDetail(Long orderId,Long branchId, Long engineerId) {
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndBranchIdAndEngineerId(orderId,branchId,engineerId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);

@@ -61,12 +61,15 @@ public class PurchaseOrderController {
         return ApiResponse.success_only(SuccessStatus.REQUEST_PURCHASE_SUCCESS);
     }
 
-    @Operation(summary = "본사 발주 전체 조회", description = "대리점이 등록한 발주 내역을 조회합니다.")
-    @GetMapping("/head")
-    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getPurchaseOrders(){
-        List<PurchaseOrderResponse> list = purchaseOrderService.getAllPurchaseOrders();
-        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
-    }
+    /**
+     * TODO:본사용 전체 조회(모든 대리점)
+     */
+//    @Operation(summary = "본사 발주 전체 조회", description = "대리점이 등록한 발주 내역을 조회합니다.")
+//    @GetMapping("/head")
+//    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getAllPurchaseOrders(){
+//        List<PurchaseOrderResponse> list = purchaseOrderService.getAllPurchaseOrders();
+//        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
+//    }
 
     @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 조회합니다.")
     @GetMapping("/branch")
@@ -80,25 +83,30 @@ public class PurchaseOrderController {
     @Operation(summary = "대리점 발주 상태 그룹별 조회", description = "준비 / 완료 / 취소·반려 그룹별로 발주 내역을 조회합니다.")
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getBranchPurchaseOrdersByFilter(
-            @RequestParam Long branchId,  @RequestParam String filterType  // "ready", "completed", "cancelled"
+            @RequestParam Long branchId, @RequestParam Long engineerId,  @RequestParam String filterType  // "ready", "completed", "cancelled"
     ){
-        List<PurchaseOrderResponse> list = purchaseOrderService.getBranchPurchaseOrdersByFilter(branchId, filterType);
+        List<PurchaseOrderResponse> list = purchaseOrderService.getBranchPurchaseOrdersByFilter(branchId, engineerId, filterType);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
     }
 
-    @Operation(summary = "본사 발주 상태별 조회", description = "승인대기, 승인완료, 반려, 출고중, 납품완료, 취소 상태별로 발주 내역을 조회합니다.")
-    @GetMapping("/head/status")
-    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getHeadPurchaseOrdersByStatus(
-            @RequestParam String status  // "PENDING", "APPROVED", "REJECTED", "SHIPPED", "COMPLETED", "CANCELLED"
-    ) {
-        List<PurchaseOrderResponse> list = purchaseOrderService.getHeadPurchaseOrdersByStatus(status);
-        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS, list);
-    }
+    /**
+     * 본사 상태별 조회
+     */
+//    @Operation(summary = "본사 발주 상태별 조회", description = "승인대기, 승인완료, 반려, 출고중, 납품완료, 취소 상태별로 발주 내역을 조회합니다.")
+//    @GetMapping("/head/status")
+//    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getHeadPurchaseOrdersByStatus(
+//            @RequestParam String status  // "PENDING", "APPROVED", "REJECTED", "SHIPPED", "COMPLETED", "CANCELLED"
+//    ) {
+//        List<PurchaseOrderResponse> list = purchaseOrderService.getHeadPurchaseOrdersByStatus(status);
+//        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS, list);
+//    }
 
-    @Operation(summary = "발주 상세 조회", description = "특정 발주 번호 상세 조회")
+    @Operation(summary = "대리점에서 발주 상세 조회", description = "특정 발주 번호 상세 조회")
     @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> getPurchaseOrderDetail(@PathVariable Long orderId){
-        PurchaseOrderResponse detail = purchaseOrderService.getPurchaseOrderDetail(orderId);
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> getPurchaseOrderDetail(
+            @PathVariable Long orderId, @RequestParam Long branchId, @RequestParam Long engineerId
+    ){
+        PurchaseOrderResponse detail = purchaseOrderService.getPurchaseOrderDetail(orderId, branchId, engineerId);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,detail);
     }
 

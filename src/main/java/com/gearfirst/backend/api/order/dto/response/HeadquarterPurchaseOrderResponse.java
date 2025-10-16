@@ -3,12 +3,10 @@ package com.gearfirst.backend.api.order.dto.response;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,19 +14,18 @@ import java.util.stream.Collectors;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseOrderResponse {
-    private Long id;
-    private String orderNumber;
-    private String status;
-    private int totalPrice;
-    private LocalDateTime requestDate;
-    private LocalDateTime approvedDate;
-    private LocalDateTime transferDate;
-    private LocalDateTime completedDate;
-    private List<OrderItemResponse> items;
+public class HeadquarterPurchaseOrderResponse extends PurchaseOrderResponse{
+    private String engineerName;
+    private String branchName;
 
-    public static PurchaseOrderResponse from(PurchaseOrder order, List<OrderItem> items){
-        return PurchaseOrderResponse.builder()
+    public static HeadquarterPurchaseOrderResponse from(
+            PurchaseOrder order,
+            List<OrderItem> items,
+            String engineerName,
+            String branchName
+    ) {
+        return HeadquarterPurchaseOrderResponse.builder()
+                // 부모 필드
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus().name())
@@ -40,6 +37,9 @@ public class PurchaseOrderResponse {
                 .items(items.stream()
                         .map(OrderItemResponse::from)
                         .collect(Collectors.toList()))
+                // 자식 필드
+                .engineerName(engineerName)
+                .branchName(branchName)
                 .build();
     }
 }
