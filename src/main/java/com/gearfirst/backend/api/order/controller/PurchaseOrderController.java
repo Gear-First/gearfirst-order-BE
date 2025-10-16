@@ -168,6 +168,40 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.REQUEST_PURCHASE_SUCCESS, fakeResponse);
     }
 
+    @Operation(summary = "가짜 전체 발주 조회", description = "모든 발주 내역을 반환합니다 (목 데이터)")
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<PurchaseOrderResponseDto>>> getAllBranchPurchaseOrders(
+            @RequestParam Long branchId
+    ) {
+        // 전체 발주 내역 (목 데이터)
+        List<PurchaseOrderResponseDto> allOrders = List.of(
+                new PurchaseOrderResponseDto("P0-251015-E2", "PENDING", List.of(
+                        new OrderItemResponseDto(1L, "엔진오일2", 3)
+                )),
+                new PurchaseOrderResponseDto("P0-251003-E8", "PENDING", List.of(
+                        new OrderItemResponseDto(1L, "엔진오일8", 3)
+                )),
+                new PurchaseOrderResponseDto("P0-251001-E1", "REJECTED", List.of(
+                        new OrderItemResponseDto(1L, "엔진오일1", 3)
+                )),
+                new PurchaseOrderResponseDto("P0-250928-E1", "APPROVED", List.of(
+                        new OrderItemResponseDto(1L, "엔진오일1", 7)
+                )),
+                new PurchaseOrderResponseDto("P0-250920-BP1", "SHIPPED", List.of(
+                        new OrderItemResponseDto(3L, "브레이크패드1", 4)
+                )),
+                new PurchaseOrderResponseDto("P0-250910-BT1", "COMPLETED", List.of(
+                        new OrderItemResponseDto(8L, "배터리1 (60Ah)", 1)
+                )),
+                new PurchaseOrderResponseDto("P0-250919-BT2", "CANCELLED", List.of(
+                        new OrderItemResponseDto(10L, "배터리2 (80Ah)", 1)
+                ))
+        );
+
+        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS, allOrders);
+    }
+
+
     @Operation(summary = "가짜 발주 상태별 조회", description = "필터(준비, 완료, 취소)에 따라 발주 내역을 반환합니다 (목 데이터)")
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<PurchaseOrderResponseDto>>> getBranchPurchaseOrdersByFilter(
