@@ -19,6 +19,6 @@ public enum OrderStatus {
     }
 
     /**
-     * TODO: CANCELLED(대리점이 출고 전 발주 취소),RETURNED(대리점이 수령 후 반품)
+     * TODO: RETURNED(대리점이 수령 후 반품)
      */
 }

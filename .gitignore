@@ -36,11 +36,9 @@ out/
 ### VS Code ###
 .vscode/
 
+*.yml
+!.coderabbit.yml
+
 # GitHub Actions workflows는 무시하지 않음
 !.github/
 !.github/workflows/
-
-*.yml
-*.properties
-
-
