@@ -11,7 +11,7 @@ import java.util.List;
 @FeignClient(name = "gearfirst-repair", url = "http://localhost:8082")
 public interface RepairClient {
     @GetMapping("/api/v1/repairs/{engineerId}")
-    List<ReceiptCarResponse> getRepairsByEngineer(@PathVariable Long engineerId );
+    List<ReceiptCarResponse> getAllRepairsByEngineer(@PathVariable Long engineerId );
 
     @GetMapping("/api/v1/repairs/search/{engineerId}")
     List<ReceiptCarResponse> searchRepairsByEngineer(@PathVariable Long engineerId, @RequestParam String keyword );

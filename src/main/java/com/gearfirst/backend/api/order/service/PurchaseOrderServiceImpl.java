@@ -36,7 +36,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
-        List<ReceiptCarResponse> repairs = repairClient.getRepairsByEngineer(engineerId);
+        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
 
         return repairs.stream()
                 .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
