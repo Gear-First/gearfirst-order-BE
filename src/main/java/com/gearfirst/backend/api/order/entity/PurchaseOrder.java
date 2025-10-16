@@ -1,6 +1,6 @@
 package com.gearfirst.backend.api.order.entity;
 
-import com.gearfirst.backend.api.branch.entity.Branch;
+
 import com.gearfirst.backend.api.order.command.ShipmentCommand;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import jakarta.persistence.*;
