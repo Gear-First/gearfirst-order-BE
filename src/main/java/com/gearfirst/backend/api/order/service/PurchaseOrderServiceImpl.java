@@ -32,7 +32,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     //private final UserClient userClient;
 
     /**
-     * 발주 요청 시 엔지니어가 접수한 차량 리스트 조회
+     * 발주 요청 시 엔지니어가 접수(접수, 수리중)한 차량 리스트 조회
      */
     @Override
     public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
@@ -55,7 +55,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     }
 
     /**
-     * 차량에 맞는 부품 검색
+     * 차종에 맞는 부품 검색
      */
     @Override
     public List<InventoryResponse> findInventoriesByCarModel(Long carModelId, String keyword){
@@ -120,6 +120,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 //    }
 
     //엔지니어용 발주 목록 전체 조회
+    //TODO: 날짜 필터링 필요 예) 최근 3개월 발주 내역, 올해 완료된 주문
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseOrderResponse> getBranchPurchaseOrders(Long branchId, Long engineerId) {
