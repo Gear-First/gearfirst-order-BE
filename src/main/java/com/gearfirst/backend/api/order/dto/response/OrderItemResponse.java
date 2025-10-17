@@ -1,4 +1,4 @@
-package com.gearfirst.backend.api.order.dto;
+package com.gearfirst.backend.api.order.dto.response;
 
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import lombok.Builder;

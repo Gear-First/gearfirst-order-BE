@@ -1,7 +1,7 @@
 package com.gearfirst.backend.api.order.infra.client;
 
-import com.gearfirst.backend.api.order.infra.dto.InventoryResponse;
-import com.gearfirst.backend.api.order.infra.dto.OutboundRequest;
+import com.gearfirst.backend.api.order.infra.client.dto.InventoryResponse;
+import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 

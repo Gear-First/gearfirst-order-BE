@@ -1,24 +1,24 @@
-package com.gearfirst.backend.api.order.dto;
+package com.gearfirst.backend.api.order.dto.response;
 
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
-@Builder
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PurchaseOrderResponse {
     private Long id;
     private String orderNumber;
-    private String vehicleNumber;
-    private String vehicleModel;
-    private Long engineerId;
-    private Long branchId;
     private String status;
     private int totalPrice;
     private LocalDateTime requestDate;
@@ -31,10 +31,6 @@ public class PurchaseOrderResponse {
         return PurchaseOrderResponse.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
-                .vehicleNumber(order.getVehicleNumber())
-                .vehicleModel(order.getVehicleModel())
-                .engineerId(order.getEngineerId())
-                .branchId(order.getBranchId())
                 .status(order.getStatus().name())
                 .totalPrice(order.getTotalPrice())
                 .requestDate(order.getRequestDate())
