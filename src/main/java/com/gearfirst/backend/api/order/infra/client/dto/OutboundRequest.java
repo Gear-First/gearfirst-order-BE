@@ -1,4 +1,4 @@
-package com.gearfirst.backend.api.order.infra.dto;
+package com.gearfirst.backend.api.order.infra.client.dto;
 
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;

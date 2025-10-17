@@ -1,9 +1,8 @@
-package com.gearfirst.backend.api.order.dto;
+package com.gearfirst.backend.api.order.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Getter
