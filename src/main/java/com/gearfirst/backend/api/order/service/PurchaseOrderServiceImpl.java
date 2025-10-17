@@ -74,6 +74,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         //발주 엔티티 생성
         PurchaseOrder order = PurchaseOrder.builder()
                 .vehicleNumber(request.getVehicleNumber())
+                .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
                 .branchId(request.getBranchId())
                 .build();

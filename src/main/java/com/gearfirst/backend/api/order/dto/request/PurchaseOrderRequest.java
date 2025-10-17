@@ -9,6 +9,7 @@ import java.util.List;
 @Setter
 public class PurchaseOrderRequest {
     private String vehicleNumber;
+    private String vehicleModel;
     private Long engineerId;
     private Long branchId;
     private List<OrderItemRequest> items;
