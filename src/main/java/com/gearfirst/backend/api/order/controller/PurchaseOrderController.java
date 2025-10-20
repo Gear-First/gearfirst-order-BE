@@ -110,6 +110,14 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,detail);
     }
 
+    @Operation(summary = "대리점에서 발주 취소", description = "대리점에서 승인 대기, 승인 완료의 상태 발주만 취소합니다.")
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<ApiResponse<Void>> cancelBranchOrder(@PathVariable Long orderId, @RequestParam Long branchId, @RequestParam Long engineerId /*@AuthenticationPrincipal JwtUserPrincipal user*/){
+        purchaseOrderService.cancelBranchOrder(orderId,branchId,engineerId);
+        return ApiResponse.success_only(SuccessStatus.CANCEL_PURCHASE_SUCCESS);
+    }
+
+
     @Operation(summary = "발주 승인", description = "본사에서 발주를 승인합니다.")
     @PatchMapping("/{orderId}/{warehouseId}/approve")
     public ResponseEntity<ApiResponse<Void>> approve(@PathVariable Long orderId, @PathVariable Long warehouseId){
