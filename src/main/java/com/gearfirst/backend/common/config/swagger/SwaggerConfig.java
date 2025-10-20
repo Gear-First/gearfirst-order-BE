@@ -12,7 +12,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
         Server server = new Server();
-        server.setUrl("/");
+        server.setUrl("/order");
 
         return new OpenAPI()
                 .info(new Info()

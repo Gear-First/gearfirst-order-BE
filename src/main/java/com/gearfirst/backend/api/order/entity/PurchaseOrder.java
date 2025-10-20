@@ -111,8 +111,8 @@ public class PurchaseOrder {
         }
     }
     private void validateStateTransitionCancel(OrderStatus status){
-        if(status == OrderStatus.SHIPPED ||status == OrderStatus.COMPLETED){
-            throw new IllegalStateException("출고 이후에는 취소할 수 없습니다.");
+        if(status != OrderStatus.PENDING && status != OrderStatus.APPROVED){
+            throw new IllegalStateException("승인 대기 또는 승인 완료 상태의 발주만 취소할 수 있습니다.");
         }
     }
     //총 금액 계산
