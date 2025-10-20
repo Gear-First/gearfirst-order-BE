@@ -187,6 +187,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     }
 
     /**
+     * 대리점에서 발주 취소
+     */
+    @Override
+    public void cancelBranchOrder(Long orderId, Long branchId, Long engineerId){
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndBranchIdAndEngineerId(orderId,branchId,engineerId)
+                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+        //상태 변경
+        order.cancel();
+    }
+
+    /**
      * 발주 승인
      */
     @Override
