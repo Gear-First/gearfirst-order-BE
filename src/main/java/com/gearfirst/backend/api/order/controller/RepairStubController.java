@@ -13,10 +13,10 @@ public class RepairStubController {
             @PathVariable Long engineerId
     ) {
         return List.of(
-                new ReceiptCarResponse("RO-251015-ER","12가1234", "소나타", "PENDING"),
-                new ReceiptCarResponse("RO-251014-BR","73아5032", "아반떼", "APPROVED"),
-                new ReceiptCarResponse("RO-251002-WE","95파2342", "그랜저", "SHIPPED"),
-                new ReceiptCarResponse("RO-250915-BT","23하5293", "소나타", "COMPLETED")
+                new ReceiptCarResponse("RO-251015-ER","12가1234", "소나타", "RECEIPT"),
+                new ReceiptCarResponse("RO-251014-BR","73아5032", "아반떼", "RECEIPT"),
+                new ReceiptCarResponse("RO-251002-WE","95파2342", "그랜저", "REPAIRING"),
+                new ReceiptCarResponse("RO-250915-BT","23하5293", "소나타", "REPAIRING")
         );
     }
 
@@ -26,7 +26,7 @@ public class RepairStubController {
             @RequestParam String keyword
     ) {
         return List.of(
-                new ReceiptCarResponse("RO-251015-ER","12가1234", "소나타", "PENDING")
+                new ReceiptCarResponse("RO-251015-ER","12가1234", "소나타", "REPAIRING")
         );
     }
 }
