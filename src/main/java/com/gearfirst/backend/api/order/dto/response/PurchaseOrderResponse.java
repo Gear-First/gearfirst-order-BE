@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PurchaseOrderResponse {
-    private Long id;
+    private Long orderId;
     private String orderNumber;
     private String status;
     private int totalPrice;
@@ -29,7 +29,7 @@ public class PurchaseOrderResponse {
 
     public static PurchaseOrderResponse from(PurchaseOrder order, List<OrderItem> items){
         return PurchaseOrderResponse.builder()
-                .id(order.getId())
+                .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus().name())
                 .totalPrice(order.getTotalPrice())
