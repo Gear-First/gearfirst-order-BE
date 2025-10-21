@@ -33,20 +33,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final InventoryClient inventoryClient; // Feign Client (inventory-service 연결)
     private final RepairClient repairClient;
     //private final UserClient userClient;
-    private final KafkaTemplate<String, TestDto> kafkaTemplate;
 
     /**
      * 발주 요청 시 엔지니어가 접수(접수, 수리중)한 차량 리스트 조회
      */
     @Override
     public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
-//test        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
-        List<ReceiptCarResponse> repairs = new ArrayList<>();
-
-        //test
-        String key = engineerId.toString();
-        TestDto test = new TestDto("hello");
-        kafkaTemplate.send("test-created", key, test);
+        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
 
         return repairs.stream()
                 .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))

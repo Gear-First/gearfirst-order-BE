@@ -1,5 +1,6 @@
 package com.gearfirst.backend.api.order.controller;
 
+import com.gearfirst.backend.api.order.dto.TestDto;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.mockdto.InventoryResponseDto;
 import com.gearfirst.backend.api.order.dto.mockdto.OrderItemResponseDto;
@@ -9,14 +10,19 @@ import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
 @RequestMapping("/api/v1/mock-purchase-orders")
 @Tag(name = "Purchase Order MOCK API", description = "발주 요청/조회 가짜 API")
+@RequiredArgsConstructor
 public class MockPurchaseOrderController {
+
+    private final KafkaTemplate<String, TestDto> kafkaTemplate;
 
     @Operation(summary = "가짜 차량 목록 검색", description = "엔지니어 ID로 차량 리스트를 반환합니다 (목 데이터)")
     @GetMapping("/vehicles/all")
@@ -29,6 +35,12 @@ public class MockPurchaseOrderController {
                 new VehicleResponseDto("RO-251010-34나","34나5678", "그랜저", "현대","2025-10-09"),
                 new VehicleResponseDto("RO-251001-59차","59차9218", "쏘나타", "현대","2025-10-01")
         );
+
+        //test
+        String key = engineerId.toString();
+        TestDto test = new TestDto("hello");
+        kafkaTemplate.send("test-created", key, test);
+
         return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, fakeVehicles);
     }
 
