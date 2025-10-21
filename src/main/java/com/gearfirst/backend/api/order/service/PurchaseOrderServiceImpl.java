@@ -20,6 +20,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,7 +40,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
-        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
+//test        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
+        List<ReceiptCarResponse> repairs = new ArrayList<>();
 
         //test
         String key = engineerId.toString();
