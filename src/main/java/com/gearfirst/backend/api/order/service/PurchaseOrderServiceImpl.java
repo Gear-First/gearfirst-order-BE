@@ -1,5 +1,6 @@
 package com.gearfirst.backend.api.order.service;
 
+import com.gearfirst.backend.api.order.dto.TestDto;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
@@ -15,6 +16,7 @@ import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.NotFoundException;
 import com.gearfirst.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final InventoryClient inventoryClient; // Feign Client (inventory-service 연결)
     private final RepairClient repairClient;
     //private final UserClient userClient;
+    private final KafkaTemplate<String, TestDto> kafkaTemplate;
 
     /**
      * 발주 요청 시 엔지니어가 접수(접수, 수리중)한 차량 리스트 조회
@@ -37,6 +40,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
         List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
+
+        //test
+        String key = engineerId.toString();
+        TestDto test = new TestDto("hello");
+        kafkaTemplate.send("test-created", key, test);
 
         return repairs.stream()
                 .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
