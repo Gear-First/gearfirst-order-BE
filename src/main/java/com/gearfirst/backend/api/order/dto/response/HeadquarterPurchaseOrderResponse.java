@@ -26,7 +26,7 @@ public class HeadquarterPurchaseOrderResponse extends PurchaseOrderResponse{
     ) {
         return HeadquarterPurchaseOrderResponse.builder()
                 // 부모 필드
-                .id(order.getId())
+                .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus().name())
                 .totalPrice(order.getTotalPrice())
