@@ -2,6 +2,7 @@ package com.gearfirst.backend.api.order.controller;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
+import com.gearfirst.backend.api.order.dto.response.RepairPartResponse;
 import com.gearfirst.backend.api.order.infra.client.dto.InventoryResponse;
 import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
@@ -23,34 +24,6 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
-//    @Operation(summary = "엔지니어가 차량 리스트 조회", description = "대리점에서 엔지니어가 접수한 차량 리스트를 조회합니다.")
-//    @GetMapping("/receipts/vehicles/{engineerId}")
-//    public ResponseEntity<ApiResponse<List<ReceiptCarResponse>>> findReceiptsByEngineer(
-//            @PathVariable Long engineerId
-//    ) {
-//        List<ReceiptCarResponse> list = purchaseOrderService.findReceiptsByEngineer(engineerId);
-//        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, list);
-//    }
-//
-//    @Operation(summary = "엔지니어가 차량 검색", description = "대리점에서 엔지니어가 부품 발주를 위해 차량번호로 검색합니다.")
-//    @GetMapping("/vehicles/search/{engineerId}")
-//    public ResponseEntity<ApiResponse<List<ReceiptCarResponse>>> searchReceiptsByEngineer(
-//            @PathVariable Long engineerId,
-//            @RequestParam(required = false) String keyword
-//    ) {
-//        List<ReceiptCarResponse> list = purchaseOrderService.searchReceiptsByEngineer(engineerId, keyword);
-//        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, list);
-//    }
-//
-//    @Operation(summary = "차량에 맞는 부품 검색", description = "대리점에서 엔지니어가 부품을 검색합니다.")
-//    @GetMapping("/inventories")
-//    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoriesByCarModel(
-//            @RequestParam Long carModelId,
-//            @RequestParam(required = false) String keyword
-//    ) {
-//        List<InventoryResponse> list = purchaseOrderService.findInventoriesByCarModel(carModelId, keyword);
-//        return ApiResponse.success(SuccessStatus.SEARCH_INVENTORY_SUCCESS, list);
-//    }
 
     @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
     @PostMapping
@@ -112,9 +85,16 @@ public class PurchaseOrderController {
 
     @Operation(summary = "대리점에서 발주 취소", description = "대리점에서 승인 대기, 승인 완료의 상태 발주만 취소합니다.")
     @PatchMapping("/{orderId}/cancel")
-    public ResponseEntity<ApiResponse<Void>> cancelBranchOrder(@PathVariable Long orderId, @RequestParam Long branchId, @RequestParam Long engineerId /*@AuthenticationPrincipal JwtUserPrincipal user*/){
+    public ResponseEntity<ApiResponse<Void>> cancelBranchOrder(@PathVariable Long orderId, @RequestParam Long branchId, @RequestParam Long engineerId){
         purchaseOrderService.cancelBranchOrder(orderId,branchId,engineerId);
         return ApiResponse.success_only(SuccessStatus.CANCEL_PURCHASE_SUCCESS);
+    }
+
+    @Operation(summary = "대리점에서 수리 완료 시 발주한 부품 목록 조회", description = "대리점에서 발주 상태를 '수리에 사용됨'으로 변경하고, 해당 발주의 부품 목록을 반환합니다.")
+    @PostMapping("/complete/parts/{receiptId}/{vehicleNumber}")
+    public ResponseEntity<ApiResponse<List<RepairPartResponse>>> completeRepairParts(@PathVariable Long receiptId, @PathVariable String vehicleNumber, @RequestParam Long branchId, @RequestParam Long engineerId ){
+        List<RepairPartResponse> response = purchaseOrderService.completeRepairAndGetParts(receiptId,vehicleNumber,branchId,engineerId);
+        return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
     }
 
 
