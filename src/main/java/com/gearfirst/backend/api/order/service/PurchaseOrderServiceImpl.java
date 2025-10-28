@@ -1,5 +1,6 @@
 package com.gearfirst.backend.api.order.service;
 
+import com.gearfirst.backend.api.order.dto.TestDto;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.RepairPartResponse;
@@ -16,9 +17,11 @@ import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.NotFoundException;
 import com.gearfirst.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service

@@ -1,5 +1,6 @@
 package com.gearfirst.backend.api.order.controller;
 
+import com.gearfirst.backend.api.order.dto.TestDto;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.mockdto.InventoryResponseDto;
 import com.gearfirst.backend.api.order.dto.mockdto.OrderItemResponseDto;
@@ -9,15 +10,17 @@ import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
 @RequestMapping("/api/v1/mock-purchase-orders")
 @Tag(name = "Purchase Order MOCK API", description = "발주 요청/조회 가짜 API")
+@RequiredArgsConstructor
 public class MockPurchaseOrderController {
-
     @Operation(summary = "가짜 발주 요청", description = "요청 데이터를 그대로 돌려줍니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<PurchaseOrderResponseDto>> requestPurchaseOrder(
