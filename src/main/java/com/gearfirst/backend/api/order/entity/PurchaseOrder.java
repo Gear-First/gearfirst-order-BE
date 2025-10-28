@@ -46,6 +46,9 @@ public class PurchaseOrder {
     @Column(name="engineer_id", nullable = false)
     private Long engineerId;            //엔지니어 id
 
+    @Column(name="receipt_id", nullable = false)
+    private Long receiptId;              //수리 이력 id
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
@@ -58,17 +61,19 @@ public class PurchaseOrder {
 
 
     @Builder
-    public PurchaseOrder(String vehicleNumber, String vehicleModel, Long engineerId, Long branchId){
+    public PurchaseOrder(String vehicleNumber, String vehicleModel, Long engineerId, Long branchId, Long receiptId) {
         this.requestDate = LocalDateTime.now();
         this.orderNumber = generateOrderNumber(this.requestDate);
         this.vehicleNumber = vehicleNumber;
         this.vehicleModel = vehicleModel;
         this.engineerId = engineerId;
         this.branchId = branchId;
+        this.receiptId = receiptId;
         this.status = OrderStatus.PENDING; //기본 상태 승인 대기
         this.totalPrice = 0;
     }
 
+    //발주 번호 생성
     private static String generateOrderNumber(LocalDateTime requestDate){
         return "PO-" + requestDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
                 +"-" + UUID.randomUUID().toString().substring(0,4).toUpperCase();
@@ -98,10 +103,16 @@ public class PurchaseOrder {
         this.status = OrderStatus.COMPLETED;
         this.completedDate = LocalDateTime.now();
     }
+    //발주 취소
     public void cancel(){
         validateStateTransitionCancel(this.status);
         this.status = OrderStatus.CANCELLED;
     }
+    public void completeRepair(){
+        validateStateTransition(OrderStatus.COMPLETED, OrderStatus.USED_IN_REPAIR);
+        this.status = OrderStatus.USED_IN_REPAIR;
+    }
+
     //상태 전이 검증
     private void validateStateTransition(OrderStatus expected, OrderStatus next){
         if(this.status != expected){

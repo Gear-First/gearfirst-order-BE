@@ -15,6 +15,7 @@ public enum SuccessStatus {
     SEND_PURCHASE_DETAIL_SUCCESS(HttpStatus.OK, "발주 상세정보 조회 성공."),
     SEARCH_VEHICLE_SUCCESS(HttpStatus.OK, "차량 번호로 검색 성공"),
     SEARCH_INVENTORY_SUCCESS(HttpStatus.OK,"차량에 맞는 부품 검색 성공"),
+    SEARCH_PARTS_SUCCESS(HttpStatus.OK,"수리 완료 시 발주 부품 내역 조회 성공"),
 
     /** 201 CREATED */
     CREATE_SAMPLE_SUCCESS(HttpStatus.CREATED, "샘플 등록 성공"),
