@@ -46,8 +46,8 @@ public class PurchaseOrder {
     @Column(name="engineer_id", nullable = false)
     private Long engineerId;            //엔지니어 id
 
-    @Column(name="repair_id", nullable = false)
-    private Long repairId;              //수리 이력 id
+    @Column(name="receipt_id", nullable = false)
+    private Long receiptId;              //수리 이력 id
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -61,14 +61,14 @@ public class PurchaseOrder {
 
 
     @Builder
-    public PurchaseOrder(String vehicleNumber, String vehicleModel, Long engineerId, Long branchId, Long repairId) {
+    public PurchaseOrder(String vehicleNumber, String vehicleModel, Long engineerId, Long branchId, Long receiptId) {
         this.requestDate = LocalDateTime.now();
         this.orderNumber = generateOrderNumber(this.requestDate);
         this.vehicleNumber = vehicleNumber;
         this.vehicleModel = vehicleModel;
         this.engineerId = engineerId;
         this.branchId = branchId;
-        this.repairId = repairId;
+        this.receiptId = receiptId;
         this.status = OrderStatus.PENDING; //기본 상태 승인 대기
         this.totalPrice = 0;
     }

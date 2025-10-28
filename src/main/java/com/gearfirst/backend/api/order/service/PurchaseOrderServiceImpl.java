@@ -45,7 +45,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
                 .branchId(request.getBranchId())
-                .repairId(request.getRepairId())
+                .receiptId(request.getReceiptId())
                 .build();
 
         //부품 정보 조회
@@ -143,8 +143,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      + */
     @Transactional
     @Override
-    public List<RepairPartResponse> completeRepairAndGetParts(Long repairId, String vehicleNumber, Long branchId, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndRepairId(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, repairId)
+    public List<RepairPartResponse> completeRepairAndGetParts(Long receiptId, String vehicleNumber, Long branchId, Long engineerId){
+        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptId(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, receiptId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         //상태변경

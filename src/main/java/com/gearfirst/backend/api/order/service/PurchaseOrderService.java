@@ -24,8 +24,8 @@ public interface PurchaseOrderService {
      * TODO: 본사 상태별 조회
      */
     //List<PurchaseOrderResponse> getHeadPurchaseOrdersByStatus(String status);
-    //수리 완료 버튼 클릭시 발주 부품 조회
-    List<RepairPartResponse> completeRepairAndGetParts(Long repairId, String vehicleNumber, Long branchId, Long engineerId);
+    //수리 완료 처리 및 발주 부품 조회
+    List<RepairPartResponse> completeRepairAndGetParts(Long receiptId, String vehicleNumber, Long branchId, Long engineerId);
     //발주 상세 조회
     PurchaseOrderResponse getPurchaseOrderDetail(Long orderId,Long branchId, Long engineerId);
     //대리점 발주 취소
