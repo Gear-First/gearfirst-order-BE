@@ -45,6 +45,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
                 .branchId(request.getBranchId())
+                .repairId(request.getRepairId())
                 .build();
 
         //부품 정보 조회
@@ -137,11 +138,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 //    }
 
     /**
-     * 수리 완료 버튼 클릭시 발주 부품 조회
-     */
+     + 수리 완료 처리 및 발주 부품 조회
+     + 이 메서드는 주문 상태를 USED_IN_REPAIR로 변경합니다.
+     + */
+    @Transactional
     @Override
-    public List<RepairPartResponse> getCompletedRepairParts(String vehicleNumber, Long branchId, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatus(vehicleNumber,branchId,engineerId, OrderStatus.COMPLETED)
+    public List<RepairPartResponse> completeRepairAndGetParts(Long repairId, String vehicleNumber, Long branchId, Long engineerId){
+        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndRepairId(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, repairId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         //상태변경
