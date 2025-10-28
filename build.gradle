@@ -25,42 +25,32 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	// Swagger UI
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+    // Swagger UI
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
-	// JPA
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-	// H2
-	runtimeOnly 'com.h2database:h2'
+    // H2
+    runtimeOnly 'com.h2database:h2'
 
-	// MySQL
-	runtimeOnly 'com.mysql:mysql-connector-j'
+    // MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
     //POSTGRES
     runtimeOnly 'org.postgresql:postgresql'
 
-	// Lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // OpenFeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
-    //Spring Security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-
-    //Jwt
-    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
-    runtimeOnly  'io.jsonwebtoken:jjwt-impl:0.13.0'
-    runtimeOnly  'io.jsonwebtoken:jjwt-jackson:0.13.0'
-
-    implementation 'org.springframework.security:spring-security-oauth2-authorization-server'
-
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock:4.1.0'
 

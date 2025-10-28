@@ -42,76 +42,76 @@ class PurchaseOrderServiceImplTest {
            purchaseOrderRepository, orderItemRepository, inventoryClient, repairClient
     );
 
-    @Test
-    @DisplayName("발주 요청 시 엔지니어가 접수,수리중인 상태의 차량 전체 리스트만 조회한다.")
-    public void getReceiptsByEngineer_success() throws Exception {
-        //given
-        List<ReceiptCarResponse> fakeRepairs = createFakeRepairs();
-
-        given(repairClient.getAllRepairsByEngineer(10L))
-                .willReturn(fakeRepairs);
-        //when
-        List<ReceiptCarResponse> result = service.findReceiptsByEngineer(10L);
-        //then
-        assertThat(result).hasSize(4);
-        assertThat(result.get(0).getReceiptNumber()).isEqualTo("RO-123");
-        verify(repairClient, times(1)).getAllRepairsByEngineer(10L);
-    }
-
-    @Test
-    @DisplayName("엔지니어가 차량 검색 시 접수, 수리중인 상태의 차량 리스트만 조회한다.")
-    public void searchReceiptsByEngineer_success() throws Exception {
-        //given
-        List<ReceiptCarResponse> fakeRepairs = createFakeRepairs();
-        given(repairClient.searchRepairsByEngineer(10L,"98가")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(1)));
-        given(repairClient.searchRepairsByEngineer(10L,"98")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(1),fakeRepairs.get(2)));
-        given(repairClient.searchRepairsByEngineer(10L,"1234")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(2),fakeRepairs.get(3)));
-        given(repairClient.searchRepairsByEngineer(10L,"가1234")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(3)));
-        //when
-        List<ReceiptCarResponse> result1 = service.searchReceiptsByEngineer(10L,"98가");
-        List<ReceiptCarResponse> result2 = service.searchReceiptsByEngineer(10L,"98");
-        List<ReceiptCarResponse> result3 = service.searchReceiptsByEngineer(10L,"1234");
-        List<ReceiptCarResponse> result4 = service.searchReceiptsByEngineer(10L,"가1234");
-        //then
-        //갯수 검증
-        assertThat(result1).hasSize(2);
-        assertThat(result2).hasSize(3);
-        assertThat(result3).hasSize(3);
-        assertThat(result4).hasSize(2);
-
-        //차량번호 검증
-        assertThat(result1).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","98가5421");
-        assertThat(result2).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","98가5421","98타1234");
-        assertThat(result3).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","98타1234","86가1234");
-        assertThat(result4).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","86가1234");
-
-        //상태가 접수, 수리중 이여야함
-        assertThat(result1).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
-        assertThat(result2).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
-        assertThat(result3).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
-        assertThat(result4).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
-
-        verify(repairClient, times(4)).searchRepairsByEngineer(eq(10L),anyString());
-    }
-
-    @Test
-    @DisplayName("차종에 맞는 부품리스트가 검색된다.")
-    public void findInventoriesByCarModel_success () throws Exception {
-        //given
-        List<InventoryResponse> fakeInventories = List.of(
-                new InventoryResponse(1L,"A엔진 오일1","AB-EGO-1",10000),
-                new InventoryResponse(1L,"A엔진 오일2","AB-EGO-2",10400),
-                new InventoryResponse(1L,"A엔진 오일3","AB-EGO-3",24000),
-                new InventoryResponse(1L,"A엔진 오일4","AB-EGO-4",13000)
-        );
-        given(inventoryClient.getInventoriesByCarModel(130L,"엔진오일")).willReturn(fakeInventories);
-        //when
-        List<InventoryResponse> result = service.findInventoriesByCarModel(130L,"엔진오일");
-        //then
-        assertThat(result).hasSize(4);
-        assertThat(result).extracting("inventoryName").containsExactlyInAnyOrder("A엔진 오일1","A엔진 오일2","A엔진 오일3","A엔진 오일4");
-        verify(inventoryClient, times(1)).getInventoriesByCarModel(130L,"엔진오일");
-    }
+//    @Test
+//    @DisplayName("발주 요청 시 엔지니어가 접수,수리중인 상태의 차량 전체 리스트만 조회한다.")
+//    public void getReceiptsByEngineer_success() throws Exception {
+//        //given
+//        List<ReceiptCarResponse> fakeRepairs = createFakeRepairs();
+//
+//        given(repairClient.getAllRepairsByEngineer(10L))
+//                .willReturn(fakeRepairs);
+//        //when
+//        List<ReceiptCarResponse> result = service.findReceiptsByEngineer(10L);
+//        //then
+//        assertThat(result).hasSize(4);
+//        assertThat(result.get(0).getReceiptNumber()).isEqualTo("RO-123");
+//        verify(repairClient, times(1)).getAllRepairsByEngineer(10L);
+//    }
+//
+//    @Test
+//    @DisplayName("엔지니어가 차량 검색 시 접수, 수리중인 상태의 차량 리스트만 조회한다.")
+//    public void searchReceiptsByEngineer_success() throws Exception {
+//        //given
+//        List<ReceiptCarResponse> fakeRepairs = createFakeRepairs();
+//        given(repairClient.searchRepairsByEngineer(10L,"98가")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(1)));
+//        given(repairClient.searchRepairsByEngineer(10L,"98")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(1),fakeRepairs.get(2)));
+//        given(repairClient.searchRepairsByEngineer(10L,"1234")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(2),fakeRepairs.get(3)));
+//        given(repairClient.searchRepairsByEngineer(10L,"가1234")).willReturn(List.of(fakeRepairs.get(0),fakeRepairs.get(3)));
+//        //when
+//        List<ReceiptCarResponse> result1 = service.searchReceiptsByEngineer(10L,"98가");
+//        List<ReceiptCarResponse> result2 = service.searchReceiptsByEngineer(10L,"98");
+//        List<ReceiptCarResponse> result3 = service.searchReceiptsByEngineer(10L,"1234");
+//        List<ReceiptCarResponse> result4 = service.searchReceiptsByEngineer(10L,"가1234");
+//        //then
+//        //갯수 검증
+//        assertThat(result1).hasSize(2);
+//        assertThat(result2).hasSize(3);
+//        assertThat(result3).hasSize(3);
+//        assertThat(result4).hasSize(2);
+//
+//        //차량번호 검증
+//        assertThat(result1).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","98가5421");
+//        assertThat(result2).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","98가5421","98타1234");
+//        assertThat(result3).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","98타1234","86가1234");
+//        assertThat(result4).extracting("vehicleNumber").containsExactlyInAnyOrder("98가1234","86가1234");
+//
+//        //상태가 접수, 수리중 이여야함
+//        assertThat(result1).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
+//        assertThat(result2).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
+//        assertThat(result3).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
+//        assertThat(result4).extracting("status").allMatch(s->s.equals("RECEIPT")|| s.equals("REPAIRING"));
+//
+//        verify(repairClient, times(4)).searchRepairsByEngineer(eq(10L),anyString());
+//    }
+//
+//    @Test
+//    @DisplayName("차종에 맞는 부품리스트가 검색된다.")
+//    public void findInventoriesByCarModel_success () throws Exception {
+//        //given
+//        List<InventoryResponse> fakeInventories = List.of(
+//                new InventoryResponse(1L,"A엔진 오일1","AB-EGO-1",10000),
+//                new InventoryResponse(1L,"A엔진 오일2","AB-EGO-2",10400),
+//                new InventoryResponse(1L,"A엔진 오일3","AB-EGO-3",24000),
+//                new InventoryResponse(1L,"A엔진 오일4","AB-EGO-4",13000)
+//        );
+//        given(inventoryClient.getInventoriesByCarModel(130L,"엔진오일")).willReturn(fakeInventories);
+//        //when
+//        List<InventoryResponse> result = service.findInventoriesByCarModel(130L,"엔진오일");
+//        //then
+//        assertThat(result).hasSize(4);
+//        assertThat(result).extracting("inventoryName").containsExactlyInAnyOrder("A엔진 오일1","A엔진 오일2","A엔진 오일3","A엔진 오일4");
+//        verify(inventoryClient, times(1)).getInventoriesByCarModel(130L,"엔진오일");
+//    }
 
     @Test
     @DisplayName("엔지니어가 발주 요청을 생성한다.") //역할 3가지

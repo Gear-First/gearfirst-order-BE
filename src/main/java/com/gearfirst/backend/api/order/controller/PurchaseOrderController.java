@@ -23,34 +23,34 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
-    @Operation(summary = "엔지니어가 차량 리스트 조회", description = "대리점에서 엔지니어가 접수한 차량 리스트를 조회합니다.")
-    @GetMapping("/receipts/vehicles/{engineerId}")
-    public ResponseEntity<ApiResponse<List<ReceiptCarResponse>>> findReceiptsByEngineer(
-            @PathVariable Long engineerId
-    ) {
-        List<ReceiptCarResponse> list = purchaseOrderService.findReceiptsByEngineer(engineerId);
-        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, list);
-    }
-
-    @Operation(summary = "엔지니어가 차량 검색", description = "대리점에서 엔지니어가 부품 발주를 위해 차량번호로 검색합니다.")
-    @GetMapping("/vehicles/search/{engineerId}")
-    public ResponseEntity<ApiResponse<List<ReceiptCarResponse>>> searchReceiptsByEngineer(
-            @PathVariable Long engineerId,
-            @RequestParam(required = false) String keyword
-    ) {
-        List<ReceiptCarResponse> list = purchaseOrderService.searchReceiptsByEngineer(engineerId, keyword);
-        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, list);
-    }
-
-    @Operation(summary = "차량에 맞는 부품 검색", description = "대리점에서 엔지니어가 부품을 검색합니다.")
-    @GetMapping("/inventories")
-    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoriesByCarModel(
-            @RequestParam Long carModelId,
-            @RequestParam(required = false) String keyword
-    ) {
-        List<InventoryResponse> list = purchaseOrderService.findInventoriesByCarModel(carModelId, keyword);
-        return ApiResponse.success(SuccessStatus.SEARCH_INVENTORY_SUCCESS, list);
-    }
+//    @Operation(summary = "엔지니어가 차량 리스트 조회", description = "대리점에서 엔지니어가 접수한 차량 리스트를 조회합니다.")
+//    @GetMapping("/receipts/vehicles/{engineerId}")
+//    public ResponseEntity<ApiResponse<List<ReceiptCarResponse>>> findReceiptsByEngineer(
+//            @PathVariable Long engineerId
+//    ) {
+//        List<ReceiptCarResponse> list = purchaseOrderService.findReceiptsByEngineer(engineerId);
+//        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, list);
+//    }
+//
+//    @Operation(summary = "엔지니어가 차량 검색", description = "대리점에서 엔지니어가 부품 발주를 위해 차량번호로 검색합니다.")
+//    @GetMapping("/vehicles/search/{engineerId}")
+//    public ResponseEntity<ApiResponse<List<ReceiptCarResponse>>> searchReceiptsByEngineer(
+//            @PathVariable Long engineerId,
+//            @RequestParam(required = false) String keyword
+//    ) {
+//        List<ReceiptCarResponse> list = purchaseOrderService.searchReceiptsByEngineer(engineerId, keyword);
+//        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, list);
+//    }
+//
+//    @Operation(summary = "차량에 맞는 부품 검색", description = "대리점에서 엔지니어가 부품을 검색합니다.")
+//    @GetMapping("/inventories")
+//    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoriesByCarModel(
+//            @RequestParam Long carModelId,
+//            @RequestParam(required = false) String keyword
+//    ) {
+//        List<InventoryResponse> list = purchaseOrderService.findInventoriesByCarModel(carModelId, keyword);
+//        return ApiResponse.success(SuccessStatus.SEARCH_INVENTORY_SUCCESS, list);
+//    }
 
     @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
     @PostMapping

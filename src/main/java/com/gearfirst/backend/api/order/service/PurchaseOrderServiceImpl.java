@@ -31,40 +31,40 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final RepairClient repairClient;
     //private final UserClient userClient;
 
-    /**
-     * 발주 요청 시 엔지니어가 접수(접수, 수리중)한 차량 리스트 조회
-     */
-    @Override
-    public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
-        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
-
-        return repairs.stream()
-                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
-                .toList();
-    }
-    /**
-     * 발주 요청 시 엔지니어가 접수한 차량 검색("12가","가3456","3456","12")
-     */
-    @Override
-    public List<ReceiptCarResponse> searchReceiptsByEngineer(Long engineerId, String keyword){
-        List<ReceiptCarResponse> repairs = repairClient.searchRepairsByEngineer(engineerId, keyword);
-
-        return repairs.stream()
-                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
-                .toList();
-    }
-
-    /**
-     * 차종에 맞는 부품 검색
-     */
-    @Override
-    public List<InventoryResponse> findInventoriesByCarModel(Long carModelId, String keyword){
-        List<InventoryResponse> inventories = inventoryClient.getInventoriesByCarModel(carModelId, keyword);
-
-        return inventories.stream()
-                .map(i -> new InventoryResponse(i.getInventoryId(),i.getInventoryName(),i.getInventoryCode(),i.getPrice()))
-                .toList();
-    }
+//    /**
+//     * 발주 요청 시 엔지니어가 접수(접수, 수리중)한 차량 리스트 조회
+//     */
+//    @Override
+//    public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
+//        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
+//
+//        return repairs.stream()
+//                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
+//                .toList();
+//    }
+//    /**
+//     * 발주 요청 시 엔지니어가 접수한 차량 검색("12가","가3456","3456","12")
+//     */
+//    @Override
+//    public List<ReceiptCarResponse> searchReceiptsByEngineer(Long engineerId, String keyword){
+//        List<ReceiptCarResponse> repairs = repairClient.searchRepairsByEngineer(engineerId, keyword);
+//
+//        return repairs.stream()
+//                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
+//                .toList();
+//    }
+//
+//    /**
+//     * 차종에 맞는 부품 검색
+//     */
+//    @Override
+//    public List<InventoryResponse> findInventoriesByCarModel(Long carModelId, String keyword){
+//        List<InventoryResponse> inventories = inventoryClient.getInventoriesByCarModel(carModelId, keyword);
+//
+//        return inventories.stream()
+//                .map(i -> new InventoryResponse(i.getInventoryId(),i.getInventoryName(),i.getInventoryCode(),i.getPrice()))
+//                .toList();
+//    }
 
     /**
      * 발주 요청 생성
@@ -79,29 +79,45 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .branchId(request.getBranchId())
                 .build();
 
+//        //부품 정보 조회
+//        List<OrderItem> orderItems = request.getItems().stream()
+//                .map(i -> {
+//                    //재고 데이터 조회
+//                    InventoryResponse inventory = inventoryClient.getInventoryById(i.getInventoryId());
+//                    //단가/이름을 db 에서 가져온 값으로 대체
+//                    int price = inventory.getPrice();
+//                    String name = inventory.getInventoryName();
+//                    String code = inventory.getInventoryCode();
+//
+//                    // OrderItem 생성
+//                    return new OrderItem(order, i.getInventoryId(), name, code, price, i.getQuantity());
+//                })
+//                .toList();
+//
+//            // 총금액 계산
+//            order.calculateTotalPrice(orderItems);
+
         //부품 정보 조회
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(i -> {
-                    //재고 데이터 조회
-                    InventoryResponse inventory = inventoryClient.getInventoryById(i.getInventoryId());
-                    //단가/이름을 db 에서 가져온 값으로 대체
-                    int price = inventory.getPrice();
-                    String name = inventory.getInventoryName();
-                    String code = inventory.getInventoryCode();
+                    int price =0; //가격정보 받아오게 되면 수정 필요
+                    String name = i.getInventoryName();
+                    String code = i.getInventoryCode();
 
                     // OrderItem 생성
                     return new OrderItem(order, i.getInventoryId(), name, code, price, i.getQuantity());
                 })
                 .toList();
 
-            // 총금액 계산
-            order.calculateTotalPrice(orderItems);
+        // 총금액 계산
+        order.calculateTotalPrice(orderItems);
+        //  저장
 
-            //  저장
-            purchaseOrderRepository.save(order);
-            orderItemRepository.saveAll(orderItems);
+        purchaseOrderRepository.save(order);
+        orderItemRepository.saveAll(orderItems);
 
-            //  응답 DTO 변환
+
+
    }
 
     /**
