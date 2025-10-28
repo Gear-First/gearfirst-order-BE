@@ -18,47 +18,6 @@ import java.util.List;
 @Tag(name = "Purchase Order MOCK API", description = "발주 요청/조회 가짜 API")
 public class MockPurchaseOrderController {
 
-//    @Operation(summary = "가짜 차량 목록 검색", description = "엔지니어 ID로 차량 리스트를 반환합니다 (목 데이터)")
-//    @GetMapping("/vehicles/all")
-//    public ResponseEntity<ApiResponse<List<VehicleResponseDto>>> getEngineerVehicles(
-//            @RequestParam Long engineerId
-//    ) {
-//        //접수 번호, 차량번호, 차종
-//        List<VehicleResponseDto> fakeVehicles = List.of(
-//                new VehicleResponseDto("RO-251011-12가","12가3456", "쏘나타",  "현대","2025-10-11"),
-//                new VehicleResponseDto("RO-251010-34나","34나5678", "그랜저", "현대","2025-10-09"),
-//                new VehicleResponseDto("RO-251001-59차","59차9218", "쏘나타", "현대","2025-10-01")
-//        );
-//        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, fakeVehicles);
-//    }
-//
-//    @Operation(summary = "가짜 차량 목록 조회", description = "엔지니어 ID와 키워드로 검색된 차량 리스트를 반환합니다 (목 데이터)")
-//    @GetMapping("/vehicles")
-//    public ResponseEntity<ApiResponse<List<VehicleResponseDto>>> getEngineerVehicles(
-//            @RequestParam Long engineerId,
-//            @RequestParam(required = false) String keyword
-//    ) {
-//        List<VehicleResponseDto> fakeVehicles = List.of(
-//                new VehicleResponseDto("PO-251011-12가","12가3456", "쏘나타",  "현대","2025-10-11")
-//        );
-//        return ApiResponse.success(SuccessStatus.SEARCH_VEHICLE_SUCCESS, fakeVehicles);
-//    }
-//
-//    @Operation(summary = "가짜 부품 검색", description = "차량 모델 ID로 검색된 부품 리스트를 반환합니다 (목 데이터)")
-//    @GetMapping("/inventories")
-//    public ResponseEntity<ApiResponse<List<InventoryResponseDto>>> getInventoriesByCarModel(
-//            @RequestParam Long carModelId,
-//            @RequestParam(required = false) String keyword
-//    ) {
-//        List<InventoryResponseDto> fakeInventories = List.of(
-//                new InventoryResponseDto("EF-001", "엔진 오일 필터1"),
-//                new InventoryResponseDto("EF-002", "엔진 오일 필터2"),
-//                new InventoryResponseDto("EF-003", "엔진 오일 필터3"),
-//                new InventoryResponseDto("EF-001", "엔진 오일 필터4")
-//        );
-//        return ApiResponse.success(SuccessStatus.SEARCH_INVENTORY_SUCCESS, fakeInventories);
-//    }
-
     @Operation(summary = "가짜 발주 요청", description = "요청 데이터를 그대로 돌려줍니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<PurchaseOrderResponseDto>> requestPurchaseOrder(

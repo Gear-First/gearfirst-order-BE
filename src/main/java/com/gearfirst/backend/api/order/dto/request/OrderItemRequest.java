@@ -9,6 +9,6 @@ public class OrderItemRequest {
     private Long inventoryId;
     private String inventoryName;
     private String inventoryCode;
-    //private int price;
+    private int price;
     private int quantity;
 }

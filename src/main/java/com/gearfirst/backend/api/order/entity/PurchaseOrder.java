@@ -98,10 +98,16 @@ public class PurchaseOrder {
         this.status = OrderStatus.COMPLETED;
         this.completedDate = LocalDateTime.now();
     }
+    //발주 취소
     public void cancel(){
         validateStateTransitionCancel(this.status);
         this.status = OrderStatus.CANCELLED;
     }
+    public void completeRepair(){
+        validateStateTransition(OrderStatus.COMPLETED, OrderStatus.USED_IN_REPAIR);
+        this.status = OrderStatus.USED_IN_REPAIR;
+    }
+
     //상태 전이 검증
     private void validateStateTransition(OrderStatus expected, OrderStatus next){
         if(this.status != expected){

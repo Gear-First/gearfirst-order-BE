@@ -2,6 +2,7 @@ package com.gearfirst.backend.api.order.service;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
+import com.gearfirst.backend.api.order.dto.response.RepairPartResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.InventoryClient;
@@ -29,42 +30,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final OrderItemRepository orderItemRepository;
     private final InventoryClient inventoryClient; // Feign Client (inventory-service 연결)
     private final RepairClient repairClient;
-    //private final UserClient userClient;
-
-//    /**
-//     * 발주 요청 시 엔지니어가 접수(접수, 수리중)한 차량 리스트 조회
-//     */
-//    @Override
-//    public List<ReceiptCarResponse> findReceiptsByEngineer(Long engineerId){
-//        List<ReceiptCarResponse> repairs = repairClient.getAllRepairsByEngineer(engineerId);
-//
-//        return repairs.stream()
-//                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
-//                .toList();
-//    }
-//    /**
-//     * 발주 요청 시 엔지니어가 접수한 차량 검색("12가","가3456","3456","12")
-//     */
-//    @Override
-//    public List<ReceiptCarResponse> searchReceiptsByEngineer(Long engineerId, String keyword){
-//        List<ReceiptCarResponse> repairs = repairClient.searchRepairsByEngineer(engineerId, keyword);
-//
-//        return repairs.stream()
-//                .map(r -> new ReceiptCarResponse(r.getReceiptNumber(),r.getVehicleNumber(),r.getVehicleModel(),r.getStatus()))
-//                .toList();
-//    }
-//
-//    /**
-//     * 차종에 맞는 부품 검색
-//     */
-//    @Override
-//    public List<InventoryResponse> findInventoriesByCarModel(Long carModelId, String keyword){
-//        List<InventoryResponse> inventories = inventoryClient.getInventoriesByCarModel(carModelId, keyword);
-//
-//        return inventories.stream()
-//                .map(i -> new InventoryResponse(i.getInventoryId(),i.getInventoryName(),i.getInventoryCode(),i.getPrice()))
-//                .toList();
-//    }
 
     /**
      * 발주 요청 생성
@@ -79,28 +44,10 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .branchId(request.getBranchId())
                 .build();
 
-//        //부품 정보 조회
-//        List<OrderItem> orderItems = request.getItems().stream()
-//                .map(i -> {
-//                    //재고 데이터 조회
-//                    InventoryResponse inventory = inventoryClient.getInventoryById(i.getInventoryId());
-//                    //단가/이름을 db 에서 가져온 값으로 대체
-//                    int price = inventory.getPrice();
-//                    String name = inventory.getInventoryName();
-//                    String code = inventory.getInventoryCode();
-//
-//                    // OrderItem 생성
-//                    return new OrderItem(order, i.getInventoryId(), name, code, price, i.getQuantity());
-//                })
-//                .toList();
-//
-//            // 총금액 계산
-//            order.calculateTotalPrice(orderItems);
-
         //부품 정보 조회
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(i -> {
-                    int price =0; //가격정보 받아오게 되면 수정 필요
+                    int price = i.getPrice(); //가격정보 받아오게 되면 수정 필요
                     String name = i.getInventoryName();
                     String code = i.getInventoryCode();
 
@@ -115,8 +62,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         purchaseOrderRepository.save(order);
         orderItemRepository.saveAll(orderItems);
-
-
 
    }
 
@@ -188,6 +133,25 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 //                .toList();
 //    }
 
+    /**
+     * 수리 완료 버튼 클릭시 발주 부품 조회
+     */
+    @Override
+    public List<RepairPartResponse> getCompletedRepairParts(String vehicleNumber, Long branchId, Long engineerId){
+        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatus(vehicleNumber,branchId,engineerId, OrderStatus.COMPLETED)
+                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+
+        //상태변경
+        order.completeRepair();
+        // 부품 목록 조회
+        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
+
+        //  응답 변환
+        List<RepairPartResponse> partResponses = items.stream()
+                .map(i -> new RepairPartResponse(i.getInventoryName(), i.getInventoryCode(), i.getQuantity(), i.getPrice()))
+                .toList();
+        return partResponses;
+    }
 
     /**
      * 발주 상세 조회
