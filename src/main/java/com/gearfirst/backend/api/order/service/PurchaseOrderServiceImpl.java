@@ -1,27 +1,21 @@
 package com.gearfirst.backend.api.order.service;
 
-import com.gearfirst.backend.api.order.dto.TestDto;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.RepairPartResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.InventoryClient;
-import com.gearfirst.backend.api.order.infra.client.RepairClient;
-import com.gearfirst.backend.api.order.infra.client.dto.InventoryResponse;
 import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
-import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.NotFoundException;
 import com.gearfirst.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,7 +26,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final OrderItemRepository orderItemRepository;
     private final InventoryClient inventoryClient; // Feign Client (inventory-service 연결)
-    private final RepairClient repairClient;
+
 
     /**
      * 발주 요청 생성
@@ -45,7 +39,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
                 .branchId(request.getBranchId())
-                .receiptId(request.getReceiptId())
+                .receiptNum(request.getReceiptNum())
                 .build();
 
         //부품 정보 조회
@@ -106,7 +100,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     public List<PurchaseOrderResponse> getBranchPurchaseOrdersByFilter(Long branchId, Long engineerId, String filterType) {
         List<OrderStatus> statusList = switch (filterType.toLowerCase()){
             case "ready" -> List.of(OrderStatus.PENDING, OrderStatus.APPROVED, OrderStatus.SHIPPED);
-            case "completed" -> List.of(OrderStatus.COMPLETED);
+            case "completed" -> List.of(OrderStatus.COMPLETED,OrderStatus.USED_IN_REPAIR);
             case "cancelled" -> List.of(OrderStatus.REJECTED,OrderStatus.CANCELLED);
             default -> throw new IllegalArgumentException("유효하지 않은 필터 타입입니다. (ready, completed, cancelled 중하나여야 합니다.)");
         };
@@ -143,8 +137,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      + */
     @Transactional
     @Override
-    public List<RepairPartResponse> completeRepairAndGetParts(Long receiptId, String vehicleNumber, Long branchId, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptId(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, receiptId)
+    public List<RepairPartResponse> completeRepairAndGetParts(String receiptNum, String vehicleNumber, Long branchId, Long engineerId){
+        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptNum(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, receiptNum)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         //상태변경
