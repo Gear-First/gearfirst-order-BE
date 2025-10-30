@@ -23,7 +23,7 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder,Lon
     List<PurchaseOrder> findByStatusOrderByRequestDateDesc(OrderStatus status);
 
     //차량 번호와 상태로 발주 내역 조회
-    Optional<PurchaseOrder> findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptId(String vehicleNumber, Long branchId, Long engineerId, OrderStatus orderStatus,Long receiptId);
+    Optional<PurchaseOrder> findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptNum(String vehicleNumber, Long branchId, Long engineerId, OrderStatus orderStatus,String receiptNum);
 
     //대리점 발주 내역 상세 조회
     Optional<PurchaseOrder> findByIdAndBranchIdAndEngineerId(Long id, Long branchId, Long engineerId);

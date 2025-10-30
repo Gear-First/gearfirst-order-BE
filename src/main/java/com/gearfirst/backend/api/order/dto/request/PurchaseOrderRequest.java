@@ -12,6 +12,6 @@ public class PurchaseOrderRequest {
     private String vehicleModel;
     private Long engineerId;
     private Long branchId;
-    private Long receiptId;
+    private String receiptNum;
     private List<OrderItemRequest> items;
 }
