@@ -39,7 +39,7 @@ class PurchaseOrderServiceImplTest {
     private final RepairClient repairClient = mock(RepairClient.class);
 
     private final PurchaseOrderService service = new PurchaseOrderServiceImpl(
-           purchaseOrderRepository, orderItemRepository, inventoryClient, repairClient
+           purchaseOrderRepository, orderItemRepository, inventoryClient
     );
 
 //    @Test
