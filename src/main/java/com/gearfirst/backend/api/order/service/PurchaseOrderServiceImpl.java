@@ -32,7 +32,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final OrderItemRepository orderItemRepository;
     private final InventoryClient inventoryClient; // Feign Client (inventory-service 연결)
-    private final RepairClient repairClient;
+
 
     /**
      * 발주 요청 생성
@@ -45,7 +45,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
                 .branchId(request.getBranchId())
-                .receiptId(request.getReceiptId())
+                .receiptNum(request.getReceiptNum())
                 .build();
 
         //부품 정보 조회
@@ -143,8 +143,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      + */
     @Transactional
     @Override
-    public List<RepairPartResponse> completeRepairAndGetParts(Long receiptId, String vehicleNumber, Long branchId, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptId(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, receiptId)
+    public List<RepairPartResponse> completeRepairAndGetParts(String receiptNum, String vehicleNumber, Long branchId, Long engineerId){
+        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptNum(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, receiptNum)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         //상태변경
