@@ -1,8 +1,8 @@
 package com.gearfirst.backend.api.order.controller;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
+import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
-import com.gearfirst.backend.api.order.dto.response.RepairPartResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
 import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
@@ -25,11 +25,11 @@ public class PurchaseOrderController {
 
     @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> requestPurchaseOrder(
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> requestPurchaseOrder(
             @RequestBody PurchaseOrderRequest request
     ){
-        purchaseOrderService.createPurchaseOrder(request);
-        return ApiResponse.success_only(SuccessStatus.REQUEST_PURCHASE_SUCCESS);
+        PurchaseOrderResponse response = purchaseOrderService.createPurchaseOrder(request);
+        return ApiResponse.success(SuccessStatus.REQUEST_PURCHASE_SUCCESS, response);
     }
 
     /**
@@ -44,19 +44,19 @@ public class PurchaseOrderController {
 
     @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 조회합니다.")
     @GetMapping("/branch")
-    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getBranchPurchaseOrders(
-            @RequestParam Long branchId, @RequestParam Long engineerId
+    public ResponseEntity<ApiResponse<List<PurchaseOrderDetailResponse>>> getBranchPurchaseOrders(
+            @RequestParam String branchCode, @RequestParam Long engineerId
     ){
-        List<PurchaseOrderResponse> list = purchaseOrderService.getBranchPurchaseOrders(branchId,engineerId);
+        List<PurchaseOrderDetailResponse> list = purchaseOrderService.getBranchPurchaseOrders(branchCode,engineerId);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
     }
 
     @Operation(summary = "대리점 발주 상태 그룹별 조회", description = "준비 / 완료 / 취소·반려 그룹별로 발주 내역을 조회합니다.")
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getBranchPurchaseOrdersByFilter(
-            @RequestParam Long branchId, @RequestParam Long engineerId,  @RequestParam String filterType  // "ready", "completed", "cancelled"
+    public ResponseEntity<ApiResponse<List<PurchaseOrderDetailResponse>>> getBranchPurchaseOrdersByFilter(
+            @RequestParam String branchCode, @RequestParam Long engineerId,  @RequestParam String filterType  // "ready", "completed", "cancelled"
     ){
-        List<PurchaseOrderResponse> list = purchaseOrderService.getBranchPurchaseOrdersByFilter(branchId, engineerId, filterType);
+        List<PurchaseOrderDetailResponse> list = purchaseOrderService.getBranchPurchaseOrdersByFilter(branchCode, engineerId, filterType);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
     }
 
@@ -74,24 +74,31 @@ public class PurchaseOrderController {
 
     @Operation(summary = "대리점에서 발주 상세 조회", description = "특정 발주 번호 상세 조회")
     @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> getPurchaseOrderDetail(
-            @PathVariable Long orderId, @RequestParam Long branchId, @RequestParam Long engineerId
+    public ResponseEntity<ApiResponse<PurchaseOrderDetailResponse>> getPurchaseOrderDetail(
+            @PathVariable Long orderId, @RequestParam String branchCode, @RequestParam Long engineerId
     ){
-        PurchaseOrderResponse detail = purchaseOrderService.getPurchaseOrderDetail(orderId, branchId, engineerId);
+        PurchaseOrderDetailResponse detail = purchaseOrderService.getPurchaseOrderDetail(orderId,branchCode, engineerId);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,detail);
     }
 
     @Operation(summary = "대리점에서 발주 취소", description = "대리점에서 승인 대기, 승인 완료의 상태 발주만 취소합니다.")
     @PatchMapping("/{orderId}/cancel")
-    public ResponseEntity<ApiResponse<Void>> cancelBranchOrder(@PathVariable Long orderId, @RequestParam Long branchId, @RequestParam Long engineerId){
-        purchaseOrderService.cancelBranchOrder(orderId,branchId,engineerId);
+    public ResponseEntity<ApiResponse<Void>> cancelBranchOrder(@PathVariable Long orderId, @RequestParam String branchCode, @RequestParam Long engineerId){
+        purchaseOrderService.cancelBranchOrder(orderId,branchCode,engineerId);
         return ApiResponse.success_only(SuccessStatus.CANCEL_PURCHASE_SUCCESS);
     }
 
-    @Operation(summary = "대리점에서 수리 완료 시 발주한 부품 목록 조회", description = "대리점에서 발주 상태를 '수리에 사용됨'으로 변경하고, 해당 발주의 부품 목록을 반환합니다.")
+    @Operation(summary = "대리점에서 수리 완료 시 발주한 부품 목록 조회", description = "대리점에서 수리 완료 버튼 클릭 시 해당 발주의 부품 목록을 반환합니다.")
+    @GetMapping("/repair/parts/{receiptNum}/{vehicleNumber}")
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> getCompleteRepairParts(@PathVariable String receiptNum, @PathVariable String vehicleNumber, @RequestParam String branchCode, @RequestParam Long engineerId ){
+        PurchaseOrderResponse response = purchaseOrderService.getCompleteRepairPartsList(receiptNum,vehicleNumber,branchCode,engineerId);
+        return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
+    }
+
+    @Operation(summary = "대리점에서 발주 상태 수리 완료 변경 후 부품 반환", description = "대리점에서 발주 상태를 '수리에 사용됨'으로 변경하고, 해당 발주의 부품 목록을 반환합니다.")
     @PostMapping("/complete/parts/{receiptNum}/{vehicleNumber}")
-    public ResponseEntity<ApiResponse<List<RepairPartResponse>>> completeRepairParts(@PathVariable String receiptNum, @PathVariable String vehicleNumber, @RequestParam Long branchId, @RequestParam Long engineerId ){
-        List<RepairPartResponse> response = purchaseOrderService.completeRepairAndGetParts(receiptNum,vehicleNumber,branchId,engineerId);
+    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> completeRepairParts(@PathVariable String receiptNum, @PathVariable String vehicleNumber, @RequestParam String branchCode, @RequestParam Long engineerId ){
+        PurchaseOrderResponse response = purchaseOrderService.completeRepairPartsList(receiptNum,vehicleNumber,branchCode,engineerId);
         return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
     }
 

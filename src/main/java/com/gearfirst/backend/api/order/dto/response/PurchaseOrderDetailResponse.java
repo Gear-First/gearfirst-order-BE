@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,18 +15,19 @@ import java.util.stream.Collectors;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HeadquarterPurchaseOrderResponse extends PurchaseOrderResponse{
-    private String engineerName;
-    private String branchName;
+public class PurchaseOrderDetailResponse {
+    private Long orderId;
+    private String orderNumber;
+    private String status;
+    private int totalPrice;
+    private LocalDateTime requestDate;
+    private LocalDateTime approvedDate;
+    private LocalDateTime transferDate;
+    private LocalDateTime completedDate;
+    private List<OrderItemResponse> items;
 
-    public static HeadquarterPurchaseOrderResponse from(
-            PurchaseOrder order,
-            List<OrderItem> items,
-            String engineerName,
-            String branchName
-    ) {
-        return HeadquarterPurchaseOrderResponse.builder()
-                // 부모 필드
+    public static PurchaseOrderDetailResponse from(PurchaseOrder order, List<OrderItem> items){
+        return PurchaseOrderDetailResponse.builder()
                 .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus().name())
@@ -37,9 +39,6 @@ public class HeadquarterPurchaseOrderResponse extends PurchaseOrderResponse{
                 .items(items.stream()
                         .map(OrderItemResponse::from)
                         .collect(Collectors.toList()))
-                // 자식 필드
-                .engineerName(engineerName)
-                .branchName(branchName)
                 .build();
     }
 }

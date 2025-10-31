@@ -2,7 +2,7 @@ package com.gearfirst.backend.api.order.service;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
-import com.gearfirst.backend.api.order.dto.response.RepairPartResponse;
+import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.InventoryClient;
@@ -32,7 +32,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 발주 요청 생성
      */
     @Override
-    public void createPurchaseOrder(PurchaseOrderRequest request) {
+    public PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request) {
         if(purchaseOrderRepository.findByReceiptNum(request.getReceiptNum()).isPresent()){
             throw new NotFoundException(ErrorStatus.DUPLICATE_RECEIPT_NUM_EXCEPTION.getMessage());
         }
@@ -41,14 +41,14 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .vehicleNumber(request.getVehicleNumber())
                 .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
-                .branchId(request.getBranchId())
+                .branchCode(request.getBranchCode())
                 .receiptNum(request.getReceiptNum())
                 .build();
 
         //부품 정보 조회
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(i -> {
-                    int price = i.getPrice(); //가격정보 받아오게 되면 수정 필요
+                    int price = i.getPrice();
                     String name = i.getPartName();
                     String code = i.getPartCode();
 
@@ -57,12 +57,14 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 })
                 .toList();
 
-        // 총금액 계산
+        // 총금액, 총 건수 계산
         order.calculateTotalPrice(orderItems);
+        order.calculateTotalQuantity(orderItems);
         //  저장
         purchaseOrderRepository.save(order);
         orderItemRepository.saveAll(orderItems);
 
+        return PurchaseOrderResponse.from(order, orderItems);
    }
 
     /**
@@ -85,12 +87,12 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     //TODO: 날짜 필터링 필요 예) 최근 3개월 발주 내역, 올해 완료된 주문
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseOrderResponse> getBranchPurchaseOrders(Long branchId, Long engineerId) {
-        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchIdAndEngineerIdOrderByRequestDateDesc(branchId, engineerId);
+    public List<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId) {
+        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdOrderByRequestDateDesc(branchCode, engineerId);
         return orders.stream()
                 .map(order -> {
                     List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-                            return PurchaseOrderResponse.from(order, items);
+                            return PurchaseOrderDetailResponse.from(order, items);
                 })
                 .toList();
 
@@ -99,19 +101,19 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseOrderResponse> getBranchPurchaseOrdersByFilter(Long branchId, Long engineerId, String filterType) {
+    public List<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(String branchCode, Long engineerId, String filterType) {
         List<OrderStatus> statusList = switch (filterType.toLowerCase()){
             case "ready" -> List.of(OrderStatus.PENDING, OrderStatus.APPROVED, OrderStatus.SHIPPED);
             case "completed" -> List.of(OrderStatus.COMPLETED,OrderStatus.USED_IN_REPAIR);
             case "cancelled" -> List.of(OrderStatus.REJECTED,OrderStatus.CANCELLED);
             default -> throw new IllegalArgumentException("유효하지 않은 필터 타입입니다. (ready, completed, cancelled 중하나여야 합니다.)");
         };
-        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchIdAndEngineerIdAndStatusInOrderByRequestDateDesc(branchId, engineerId, statusList);
+        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(branchCode, engineerId, statusList);
 
         return orders.stream()
                 .map(order -> {
                     List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-                    return PurchaseOrderResponse.from(order, items);
+                    return PurchaseOrderDetailResponse.from(order, items);
                 })
                 .toList();
     }
@@ -134,25 +136,47 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 //    }
 
     /**
-     + 수리 완료 처리 및 발주 부품 조회
-     + 이 메서드는 주문 상태를 USED_IN_REPAIR로 변경합니다.
+     + 수리 완료 버튼 클릭 시 발주 부품 조회
      + */
+    @Transactional(readOnly = true)
+    @Override
+    public PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
+        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
+        // 부품 목록 조회
+        List<OrderItem> items = getOrderItems(order);
+
+        return PurchaseOrderResponse.from(order, items);
+    }
+    /**
+     * 수리 완료 처리
+     */
     @Transactional
     @Override
-    public List<RepairPartResponse> completeRepairAndGetParts(String receiptNum, String vehicleNumber, Long branchId, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptNum(vehicleNumber, branchId, engineerId, OrderStatus.COMPLETED, receiptNum)
-                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
-
+    public PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
+        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
         //상태변경
         order.completeRepair();
         // 부품 목록 조회
-        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
+        List<OrderItem> items = getOrderItems(order);
 
-        //  응답 변환
-        List<RepairPartResponse> partResponses = items.stream()
-                .map(i -> new RepairPartResponse(i.getPartName(), i.getPartCode(), i.getQuantity(), i.getPrice()))
-                .toList();
-        return partResponses;
+        return PurchaseOrderResponse.from(order, items);
+    }
+    /**
+     * 공통: 발주 조회 메서드
+     */
+    private PurchaseOrder findCompletedOrder(String receiptNum, String vehicleNumber, String branchCode, Long engineerId) {
+        return purchaseOrderRepository
+                .findByVehicleNumberAndBranchCodeAndEngineerIdAndStatusAndReceiptNum(
+                        vehicleNumber, branchCode, engineerId, OrderStatus.COMPLETED, receiptNum
+                )
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+    }
+
+    /**
+     *  공통: 부품 목록 조회 메서드
+     */
+    private List<OrderItem> getOrderItems(PurchaseOrder order) {
+        return orderItemRepository.findByPurchaseOrder_Id(order.getId());
     }
 
     /**
@@ -160,20 +184,20 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     @Transactional(readOnly = true)
-    public PurchaseOrderResponse getPurchaseOrderDetail(Long orderId,Long branchId, Long engineerId) {
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndBranchIdAndEngineerId(orderId,branchId,engineerId)
+    public PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String branchCode, Long engineerId) {
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndBranchCodeAndEngineerId(orderId,branchCode,engineerId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
-        return PurchaseOrderResponse.from(order,items);
+        return PurchaseOrderDetailResponse.from(order,items);
     }
 
     /**
      * 대리점에서 발주 취소
      */
     @Override
-    public void cancelBranchOrder(Long orderId, Long branchId, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndBranchIdAndEngineerId(orderId,branchId,engineerId)
+    public void cancelBranchOrder(Long orderId, String branchCode, Long engineerId){
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndBranchCodeAndEngineerId(orderId,branchCode,engineerId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         //상태 변경
         order.cancel();

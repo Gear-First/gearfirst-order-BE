@@ -3,9 +3,6 @@ package com.gearfirst.backend.api.order.repository;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -14,19 +11,19 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder,Lon
     List<PurchaseOrder> findAllByOrderByRequestDateDesc();
 
     //엔지니어용 발주 내역 조회
-    List<PurchaseOrder> findByBranchIdAndEngineerIdOrderByRequestDateDesc(Long branchId, Long engineerId);
+    List<PurchaseOrder> findByBranchCodeAndEngineerIdOrderByRequestDateDesc(String branchCode, Long engineerId);
 
     //대리점 상태 그룹별로 목록 조회
-     List<PurchaseOrder> findByBranchIdAndEngineerIdAndStatusInOrderByRequestDateDesc(Long branchId, Long engineerId, List<OrderStatus> statuses);
+     List<PurchaseOrder> findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(String branchCode, Long engineerId, List<OrderStatus> statuses);
 
     //본사 상태별 발주 목록 확인
     List<PurchaseOrder> findByStatusOrderByRequestDateDesc(OrderStatus status);
 
     //차량 번호와 상태로 발주 내역 조회
-    Optional<PurchaseOrder> findByVehicleNumberAndBranchIdAndEngineerIdAndStatusAndReceiptNum(String vehicleNumber, Long branchId, Long engineerId, OrderStatus orderStatus,String receiptNum);
+    Optional<PurchaseOrder> findByVehicleNumberAndBranchCodeAndEngineerIdAndStatusAndReceiptNum(String vehicleNumber, String branchCode, Long engineerId, OrderStatus orderStatus,String receiptNum);
 
     //대리점 발주 내역 상세 조회
-    Optional<PurchaseOrder> findByIdAndBranchIdAndEngineerId(Long id, Long branchId, Long engineerId);
+    Optional<PurchaseOrder> findByIdAndBranchCodeAndEngineerId(Long id, String branchCode, Long engineerId);
 
     //수리 접수 번호 중복체크
     Optional<PurchaseOrder> findByReceiptNum(String receiptNum);
