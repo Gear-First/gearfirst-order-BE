@@ -10,24 +10,18 @@ import com.gearfirst.backend.api.order.infra.client.InventoryClient;
 import com.gearfirst.backend.api.order.infra.client.RepairClient;
 import com.gearfirst.backend.api.order.infra.client.dto.InventoryResponse;
 import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
-import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.enums.OrderStatus;
-import jdk.dynalink.Operation;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.gearfirst.backend.api.order.fixture.ReceiptCarFixture.createFakeRepairs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.*;
-import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 
@@ -118,15 +112,15 @@ class PurchaseOrderServiceImplTest {
     public void createPurchaseOrderByEngineer() throws Exception {
         //given
         OrderItemRequest item1 = new OrderItemRequest();
-        item1.setInventoryId(100L);
-        item1.setInventoryName("브레이크 패드2");
-        item1.setInventoryCode("BP-02");
+        item1.setPartId(100L);
+        item1.setPartName("브레이크 패드2");
+        item1.setPartCode("BP-02");
         item1.setPrice(23000);
         item1.setQuantity(2);
         OrderItemRequest item2 = new OrderItemRequest();
-        item2.setInventoryId(20L);
-        item2.setInventoryName("엔진오일1");
-        item2.setInventoryCode("EO-05");
+        item2.setPartId(20L);
+        item2.setPartName("엔진오일1");
+        item2.setPartCode("EO-05");
         item2.setPrice(12000);
         item2.setQuantity(1);
         List<OrderItemRequest> items = List.of(item1,item2);
@@ -153,8 +147,8 @@ class PurchaseOrderServiceImplTest {
 
         List<OrderItem> saveItems = orderItemsCaptor.getValue();
         assertThat(saveItems).hasSize(2);
-        assertThat(saveItems.get(0).getInventoryName()).isEqualTo("브레이크패드2");
-        assertThat(saveItems.get(1).getInventoryCode()).isEqualTo("EO-05");
+        assertThat(saveItems.get(0).getPartName()).isEqualTo("브레이크패드2");
+        assertThat(saveItems.get(1).getPartCode()).isEqualTo("EO-05");
         assertThat(saveItems.get(1).getPrice()).isEqualTo(12000);
 
         int totalPrice = saveItems.stream()

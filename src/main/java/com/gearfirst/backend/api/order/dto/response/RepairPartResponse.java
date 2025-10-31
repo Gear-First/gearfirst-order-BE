@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class RepairPartResponse {
-    private String inventoryName;
-    private String inventoryCode;
+    private String partName;
+    private String partCode;
     private int quantity;
     private int price;
 }

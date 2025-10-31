@@ -33,6 +33,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     public void createPurchaseOrder(PurchaseOrderRequest request) {
+        if(purchaseOrderRepository.findByReceiptNum(request.getReceiptNum()).isPresent()){
+            throw new NotFoundException(ErrorStatus.DUPLICATE_RECEIPT_NUM_EXCEPTION.getMessage());
+        }
         //발주 엔티티 생성
         PurchaseOrder order = PurchaseOrder.builder()
                 .vehicleNumber(request.getVehicleNumber())
@@ -46,18 +49,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(i -> {
                     int price = i.getPrice(); //가격정보 받아오게 되면 수정 필요
-                    String name = i.getInventoryName();
-                    String code = i.getInventoryCode();
+                    String name = i.getPartName();
+                    String code = i.getPartCode();
 
                     // OrderItem 생성
-                    return new OrderItem(order, i.getInventoryId(), name, code, price, i.getQuantity());
+                    return new OrderItem(order, i.getPartId(), name, code, price, i.getQuantity());
                 })
                 .toList();
 
         // 총금액 계산
         order.calculateTotalPrice(orderItems);
         //  저장
-
         purchaseOrderRepository.save(order);
         orderItemRepository.saveAll(orderItems);
 
@@ -148,7 +150,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         //  응답 변환
         List<RepairPartResponse> partResponses = items.stream()
-                .map(i -> new RepairPartResponse(i.getInventoryName(), i.getInventoryCode(), i.getQuantity(), i.getPrice()))
+                .map(i -> new RepairPartResponse(i.getPartName(), i.getPartCode(), i.getQuantity(), i.getPrice()))
                 .toList();
         return partResponses;
     }

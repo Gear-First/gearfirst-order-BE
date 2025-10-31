@@ -28,5 +28,6 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder,Lon
     //대리점 발주 내역 상세 조회
     Optional<PurchaseOrder> findByIdAndBranchIdAndEngineerId(Long id, Long branchId, Long engineerId);
 
-
+    //수리 접수 번호 중복체크
+    Optional<PurchaseOrder> findByReceiptNum(String receiptNum);
 }

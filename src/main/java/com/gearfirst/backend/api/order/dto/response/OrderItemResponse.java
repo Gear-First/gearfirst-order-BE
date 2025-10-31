@@ -8,8 +8,8 @@ import lombok.Getter;
 @Builder
 public class OrderItemResponse {
     private Long id;
-    private String inventoryName;
-    private String inventoryCode;
+    private String partName;
+    private String partCode;
     private int price;
     private int quantity;
     private int totalPrice;
@@ -17,8 +17,8 @@ public class OrderItemResponse {
     public static OrderItemResponse from(OrderItem item) {
         return OrderItemResponse.builder()
                 .id(item.getId())
-                .inventoryName(item.getInventoryName())
-                .inventoryCode(item.getInventoryCode())
+                .partName(item.getPartName())
+                .partCode(item.getPartCode())
                 .price(item.getPrice())
                 .quantity(item.getQuantity())
                 .totalPrice(item.getTotalPrice())

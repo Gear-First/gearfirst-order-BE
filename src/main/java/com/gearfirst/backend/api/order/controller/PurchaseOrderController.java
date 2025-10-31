@@ -3,8 +3,6 @@ package com.gearfirst.backend.api.order.controller;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.RepairPartResponse;
-import com.gearfirst.backend.api.order.infra.client.dto.InventoryResponse;
-import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
 import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
