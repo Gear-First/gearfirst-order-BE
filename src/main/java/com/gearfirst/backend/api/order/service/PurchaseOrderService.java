@@ -24,9 +24,7 @@ public interface PurchaseOrderService {
     //List<PurchaseOrderResponse> getHeadPurchaseOrdersByStatus(String status);
     //발주 부품 조회
     PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId);
-    //수리 완료 처리
-    PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId);
-    //발주 상세 조회
+   //발주 상세 조회
     PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String branchCode, Long engineerId);
     //대리점 발주 취소
     void cancelBranchOrder(Long orderId, String branchCode, Long engineerId);
