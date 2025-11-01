@@ -142,43 +142,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Transactional(readOnly = true)
     @Override
     public PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
-        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
-        // 부품 목록 조회
-        List<OrderItem> items = getOrderItems(order);
-
-        return PurchaseOrderResponse.from(order, items);
-    }
-    /**
-     * 수리 완료 처리
-     */
-    @Transactional
-    @Override
-    public PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
-        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
-        //상태변경
-        order.completeRepair();
-        // 부품 목록 조회
-        List<OrderItem> items = getOrderItems(order);
-
-        return PurchaseOrderResponse.from(order, items);
-    }
-    /**
-     * 공통: 발주 조회 메서드
-     */
-    private PurchaseOrder findCompletedOrder(String receiptNum, String vehicleNumber, String branchCode, Long engineerId) {
-        return purchaseOrderRepository
-                .findByVehicleNumberAndBranchCodeAndEngineerIdAndStatusAndReceiptNum(
-                        vehicleNumber, branchCode, engineerId, OrderStatus.COMPLETED, receiptNum
-                )
+        PurchaseOrder order = purchaseOrderRepository
+                .findByVehicleNumberAndBranchCodeAndEngineerIdAndReceiptNum(vehicleNumber, branchCode, engineerId, receiptNum)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+        // 부품 목록 조회
+        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
+
+        return PurchaseOrderResponse.from(order, items);
     }
 
-    /**
-     *  공통: 부품 목록 조회 메서드
-     */
-    private List<OrderItem> getOrderItems(PurchaseOrder order) {
-        return orderItemRepository.findByPurchaseOrder_Id(order.getId());
-    }
 
     /**
      * 발주 상세 조회
@@ -195,6 +167,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
     /**
      * 대리점에서 발주 취소
+     * 완료 일시에 취소 날짜 기재
+     *
      */
     @Override
     public void cancelBranchOrder(Long orderId, String branchCode, Long engineerId){

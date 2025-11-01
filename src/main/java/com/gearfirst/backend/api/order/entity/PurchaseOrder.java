@@ -125,6 +125,7 @@ public class PurchaseOrder {
             );
         }
     }
+    //TODO: 상태값이완료 일때 취소할때 이 메세지 왜 안나오지?
     private void validateStateTransitionCancel(OrderStatus status){
         if(status != OrderStatus.PENDING && status != OrderStatus.APPROVED){
             throw new IllegalStateException("승인 대기 또는 승인 완료 상태의 발주만 취소할 수 있습니다.");
