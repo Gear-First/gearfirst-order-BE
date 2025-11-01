@@ -34,7 +34,7 @@ public class OutboundRequest {
                 order.getId(),
                 warehouseId,
                 orderItems.stream()
-                        .map(i-> new Item(i.getInventoryId(), i.getQuantity()))
+                        .map(i-> new Item(i.getPartId(), i.getQuantity()))
                         .toList()
         );
     }

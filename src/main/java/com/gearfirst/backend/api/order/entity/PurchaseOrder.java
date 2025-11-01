@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 @Entity
@@ -56,18 +55,22 @@ public class PurchaseOrder {
     @Column(name="total_price", nullable = false)
     private int totalPrice;
 
-    @Column(name = "branch_id",nullable = false)
-    private Long branchId;
+    @Column(name="total_quantity", nullable = false)
+    private int totalQuantity;
+
+
+    @Column(name = "branch_code",nullable = false)
+    private String branchCode;
 
 
     @Builder
-    public PurchaseOrder(String vehicleNumber, String vehicleModel, Long engineerId, Long branchId, String receiptNum) {
+    public PurchaseOrder(String vehicleNumber, String vehicleModel, Long engineerId, String branchCode, String receiptNum) {
         this.requestDate = LocalDateTime.now();
         this.orderNumber = generateOrderNumber(this.requestDate);
         this.vehicleNumber = vehicleNumber;
         this.vehicleModel = vehicleModel;
         this.engineerId = engineerId;
-        this.branchId = branchId;
+        this.branchCode = branchCode;
         this.receiptNum = receiptNum;
         this.status = OrderStatus.PENDING; //기본 상태 승인 대기
         this.totalPrice = 0;
@@ -108,6 +111,7 @@ public class PurchaseOrder {
         validateStateTransitionCancel(this.status);
         this.status = OrderStatus.CANCELLED;
     }
+    //수리용 부품 발주 완료
     public void completeRepair(){
         validateStateTransition(OrderStatus.COMPLETED, OrderStatus.USED_IN_REPAIR);
         this.status = OrderStatus.USED_IN_REPAIR;
@@ -132,6 +136,13 @@ public class PurchaseOrder {
                 .mapToInt(OrderItem::getTotalPrice)
                 .sum();
     }
+    //총 수량 계산
+    public void calculateTotalQuantity(List<OrderItem> orderItems){
+        this.totalQuantity = orderItems.stream()
+                .mapToInt(OrderItem::getQuantity)
+                .sum();
+    }
+
     //금액 업데이트
     public void updateTotalPrice(int totalPrice){
         this.totalPrice = totalPrice;
@@ -142,7 +153,7 @@ public class PurchaseOrder {
         if(this.status != OrderStatus.APPROVED){
             throw new IllegalArgumentException("승인된 주문만 출고 지시를 생성할 수 있습니다.");
         }
-        return new ShipmentCommand(this.id, this.branchId,this.vehicleNumber,this.vehicleModel);
+        return new ShipmentCommand(this.id, this.branchCode,this.vehicleNumber,this.vehicleModel);
     }
 
 }

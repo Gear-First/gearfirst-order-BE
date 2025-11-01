@@ -10,7 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ShipmentCommand {
     private Long orderId;
-    private Long branchId;
+    private String branchCode;
     private String vehicleNumber;
     private String vehicleModel;
 }
