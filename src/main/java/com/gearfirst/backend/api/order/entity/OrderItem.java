@@ -25,12 +25,12 @@ public class OrderItem {
 
     @Column(nullable = false)
     private int quantity;           //요청 수량
-    @Column(name="inventory_id",nullable = false)
-    private long inventoryId;       //재고 id
-    @Column(name="inventory_name",nullable = false, length = 100)
-    private String inventoryName;   //부품 이름
-    @Column(name="inventory_code",nullable = false, length = 50)
-    private String inventoryCode;   //부품 코드
+    @Column(name="part_id",nullable = false)
+    private long partId;            //부품 id
+    @Column(name="part_name",nullable = false, length = 100)
+    private String partName;   //부품 이름
+    @Column(name="part_code",nullable = false, length = 50)
+    private String partCode;        //부품 코드
     @Column(nullable = false)
     private int price;              //가격
     @Column(name="total_price",nullable = false)
@@ -40,18 +40,18 @@ public class OrderItem {
     @Builder
     public OrderItem(
             PurchaseOrder purchaseOrder,
-            Long inventoryId,
-            String inventoryName,
-            String inventoryCode,
+            Long partId,
+            String partName,
+            String partCode,
             int price,
             int quantity)
     {
         validate(price,quantity);
-        validateInventoryInfo(inventoryName, inventoryCode);
+        validateInventoryInfo(partName, partCode);
         this.purchaseOrder = purchaseOrder;
-        this.inventoryId = inventoryId;
-        this.inventoryName = inventoryName;
-        this.inventoryCode = inventoryCode;
+        this.partId = partId;
+        this.partName = partName;
+        this.partCode = partCode;
         this.price = price;
         this.quantity = quantity;
         this.totalPrice = calculateTotalPrice();

@@ -1,10 +1,7 @@
 package com.gearfirst.backend.api.order.repository;
 
 import com.gearfirst.backend.api.order.entity.OrderItem;
-import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
