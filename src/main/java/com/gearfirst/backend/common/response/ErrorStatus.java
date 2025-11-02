@@ -21,7 +21,7 @@ public enum ErrorStatus {
 
     /** 409 CONFLICT */
     DUPLICATE_RECEIPT_NUM_EXCEPTION(HttpStatus.CONFLICT, "이미 존재하는 수리 번호입니다."),
-
+    INVALID_VEHICLE_INFO_EXCEPTION(HttpStatus.CONFLICT, "입력 형식이 잘못되었습니다. 차량번호, 모델, 접수번호는 모두 입력하거나 모두 생략해야 합니다."),
     /** 500 SERVER_ERROR */
     FAIL_UPLOAD_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 실패하였습니다."),
 
