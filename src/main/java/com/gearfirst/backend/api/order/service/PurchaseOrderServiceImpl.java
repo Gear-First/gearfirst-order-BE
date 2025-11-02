@@ -1,6 +1,7 @@
 package com.gearfirst.backend.api.order.service;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
+import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
@@ -103,7 +104,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<PurchaseOrderResponse> searchPurchaseOrders(
+    public PageResponse<HeadPurchaseOrderResponse> searchPurchaseOrders(
             LocalDate startDate, LocalDate endDate,
             String branchCode, String partName,
             Pageable pageable
@@ -121,14 +122,14 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         Map<Long, List<OrderItem>> itemMap = orderItems.stream()
                 .collect(Collectors.groupingBy(item -> item.getPurchaseOrder().getId()));
-        List<PurchaseOrderResponse> content = page.getContent().stream()
+        List<HeadPurchaseOrderResponse> content = page.getContent().stream()
                 .map(order -> {
                     List<OrderItem> items = itemMap.getOrDefault(order.getId(),List.of());
-                    return PurchaseOrderResponse.from(order, items);
+                    return HeadPurchaseOrderResponse.from(order, items);
                 })
                 .toList();
 
-        Page<PurchaseOrderResponse> dtoPage = new PageImpl<>(content, pageable, page.getTotalElements());
+        Page<HeadPurchaseOrderResponse> dtoPage = new PageImpl<>(content, pageable, page.getTotalElements());
         return new PageResponse<>(dtoPage);
     }
 

@@ -1,6 +1,7 @@
 package com.gearfirst.backend.api.order.controller;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
+import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
@@ -41,7 +42,7 @@ public class PurchaseOrderController {
 
     @Operation(summary = "본사 발주 전체 조회", description = "대리점이 등록한 발주 내역을 조회합니다.")
     @GetMapping("/head/orders")
-    public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderResponse>>> searchPurchaseOrders(
+    public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> searchPurchaseOrders(
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate startDate,
             @RequestParam(required = false)
@@ -52,7 +53,7 @@ public class PurchaseOrderController {
 
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        PageResponse<PurchaseOrderResponse> page =
+        PageResponse<HeadPurchaseOrderResponse> page =
         purchaseOrderService.searchPurchaseOrders(startDate, endDate, branchCode, partName, pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
     }
