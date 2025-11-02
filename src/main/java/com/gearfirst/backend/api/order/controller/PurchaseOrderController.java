@@ -1,6 +1,7 @@
 package com.gearfirst.backend.api.order.controller;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
+import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
@@ -57,7 +58,7 @@ public class PurchaseOrderController {
         purchaseOrderService.getPendingOrders(startDate, endDate, branchCode, partName, pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
     }
-    @Operation(summary = "본사 발주 전체 조회", description = "대리점이 요청한 발주 내역을 본사에서 승인/반려 후 전체조회 또는 날짜/대리점이름/부품이름으로 필터링하여  조회합니다.")
+    @Operation(summary = "본사 발주 처리건 전체 조회", description = "대리점이 요청한 발주 내역을 본사에서 승인/반려 후 전체조회 또는 날짜/대리점이름/부품이름으로 필터링하여  조회합니다.")
     @GetMapping("/head/orders/other")
     public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> getOtherOrders(
             @RequestParam(required = false)
@@ -73,6 +74,15 @@ public class PurchaseOrderController {
         PageResponse<HeadPurchaseOrderResponse> page =
                 purchaseOrderService.getOtherOrders(startDate, endDate, branchCode, partName, pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
+    }
+
+    @Operation(summary = "본사 발주 상세 조회", description = "발주 상세내역을 조회합니다.")
+    @GetMapping("/head/{orderId}")
+    public ResponseEntity<ApiResponse<HeadPurchaseOrderDetailResponse>> getPurchaseOrderDetail(
+            @PathVariable Long orderId
+    ){
+        HeadPurchaseOrderDetailResponse response= purchaseOrderService.getPurchaseOrderDetail(orderId);
+        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,response);
     }
 
     @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 조회합니다.")

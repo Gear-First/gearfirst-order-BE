@@ -32,9 +32,9 @@ class PurchaseOrderServiceImplTest {
     private final InventoryClient inventoryClient = mock(InventoryClient.class);
     private final RepairClient repairClient = mock(RepairClient.class);
 
-    private final PurchaseOrderService service = new PurchaseOrderServiceImpl(
-           purchaseOrderRepository, orderItemRepository, inventoryClient
-    );
+//    private final PurchaseOrderService service = new PurchaseOrderServiceImpl(
+//           purchaseOrderRepository, orderItemRepository, inventoryClient
+//    );
 
 //    @Test
 //    @DisplayName("발주 요청 시 엔지니어가 접수,수리중인 상태의 차량 전체 리스트만 조회한다.")

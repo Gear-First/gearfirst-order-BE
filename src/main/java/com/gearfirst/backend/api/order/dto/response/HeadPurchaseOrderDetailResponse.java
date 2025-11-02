@@ -3,11 +3,11 @@ package com.gearfirst.backend.api.order.dto.response;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,19 +15,15 @@ import java.util.stream.Collectors;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseOrderDetailResponse {
-    private Long orderId;
-    private String orderNumber;
-    private String status;
-    private int totalPrice;
-    private LocalDateTime requestDate;
-    private LocalDateTime processedDate;
-    private LocalDateTime transferDate;
-    private LocalDateTime completedDate;
-    private List<OrderItemResponse> items;
+public class HeadPurchaseOrderDetailResponse extends PurchaseOrderDetailResponse {
+    private String branchCode;
+    private String engineerName;
+    private String engineerRole;
+    private String note;
 
-    public static PurchaseOrderDetailResponse from(PurchaseOrder order, List<OrderItem> items){
-        return PurchaseOrderDetailResponse.builder()
+    public static HeadPurchaseOrderDetailResponse from(PurchaseOrder order, List<OrderItem> items) {
+        return HeadPurchaseOrderDetailResponse.builder()
+                // 부모 필드
                 .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus().name())
@@ -39,6 +35,12 @@ public class PurchaseOrderDetailResponse {
                 .items(items.stream()
                         .map(OrderItemResponse::from)
                         .collect(Collectors.toList()))
+                // 자식(본사 전용) 필드
+                .branchCode(order.getBranchCode())
+                .engineerName(order.getEngineerName())
+                .engineerRole(order.getEngineerRole())
+                .note(order.getNote())
                 .build();
     }
+
 }

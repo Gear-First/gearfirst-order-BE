@@ -1,6 +1,7 @@
 package com.gearfirst.backend.api.order.service;
 
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
+import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
@@ -136,13 +137,25 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .collect(Collectors.groupingBy(i -> i.getPurchaseOrder().getId()));
 
         List<HeadPurchaseOrderResponse> content = page.getContent().stream()
-                .map(order -> HeadPurchaseOrderResponse.from(order, itemMap.getOrDefault(order.getId(), List.of())))
+                .map(order -> HeadPurchaseOrderResponse.from(order))
                 .toList();
 
         Page<HeadPurchaseOrderResponse> dtoPage =
                 new PageImpl<>(content, page.getPageable(), page.getTotalElements());
         return new PageResponse<>(dtoPage);
     }
+    /**
+     * 본사용 발주내역 상세보기
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public HeadPurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId) {
+        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
+        return HeadPurchaseOrderDetailResponse.from(order, items);
+    }
+
     /**
      * 본사용 발주 승인 대기 상태 전체 조회(모든 대리점)
      * 발주 내역을 조회할 때마다 orderItem도 조회하므로 N+1 문제가 발생할 수 있음-> in 쿼리로 최적화
@@ -307,7 +320,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         //상태 변경
-        order.approve();
+        order.decide(OrderStatus.APPROVED);
         //발주 품목 조회
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
         //출고 명령 생성 요청(Inventory 서비스로 전송)
@@ -325,6 +338,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         //상태변경
-        order.reject();
+        order.decide(OrderStatus.REJECTED);
     }
 }

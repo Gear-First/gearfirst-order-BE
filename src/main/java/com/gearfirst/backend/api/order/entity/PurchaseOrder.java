@@ -26,8 +26,8 @@ public class PurchaseOrder {
 
     @Column(name="request_date")
     private LocalDateTime requestDate;   // 발주 요청일
-    @Column(name="approved_date")
-    private LocalDateTime approvedDate;  // 승인일
+    @Column(name="processed_date")
+    private LocalDateTime processedDate;  // 승인일
     @Column(name="transfer_date")
     private LocalDateTime transferDate;  // 창고 이관일
     @Column(name="completed_date")
@@ -42,8 +42,17 @@ public class PurchaseOrder {
     @Column(name="vehicle_model")
     private String vehicleModel;        //차량 모델
 
+    @Column(name = "branch_code",nullable = false)
+    private String branchCode;
+
     @Column(name="engineer_id", nullable = false)
     private Long engineerId;            //엔지니어 id
+
+    @Column(name="engineer_name", nullable = false)
+    private String engineerName;            //엔지니어이름
+
+    @Column(name="engineer_role", nullable = false)
+    private String engineerRole;            //엔지니어 직급
 
     @Column(name="receipt_num")
     private String receiptNum;              //수리 이력 Num
@@ -58,18 +67,21 @@ public class PurchaseOrder {
     @Column(name="total_quantity", nullable = false)
     private int totalQuantity;
 
-
-    @Column(name = "branch_code",nullable = false)
-    private String branchCode;
+    @Column(columnDefinition = "text")
+    private String note;                    //비고
 
 
     @Builder
-    public PurchaseOrder(String vehicleNumber, String vehicleModel, Long engineerId, String branchCode, String receiptNum) {
+    public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String branchCode,
+                         Long engineerId,String engineerName, String engineerRole)
+    {
         this.requestDate = LocalDateTime.now();
         this.orderNumber = generateOrderNumber(this.requestDate);
         this.vehicleNumber = vehicleNumber;
         this.vehicleModel = vehicleModel;
         this.engineerId = engineerId;
+        this.engineerName = engineerName;
+        this.engineerRole = engineerRole;
         this.branchCode = branchCode;
         this.receiptNum = receiptNum;
         this.status = OrderStatus.PENDING; //기본 상태 승인 대기
@@ -81,19 +93,18 @@ public class PurchaseOrder {
         return "PO-" + requestDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
                 +"-" + UUID.randomUUID().toString().substring(0,4).toUpperCase();
     }
+    //승인 또는 반려 처리
+    public void decide(OrderStatus nextStatus) {
+        if (this.processedDate != null) throw new IllegalStateException("이미 처리된 주문입니다.");
+        if (nextStatus != OrderStatus.APPROVED && nextStatus != OrderStatus.REJECTED) {
+            throw new IllegalArgumentException("승인 또는 반려 상태만 결정할 수 있습니다.");
+        }
 
-    //본사 승인
-    public void approve(){
-        if (this.approvedDate != null) throw new IllegalStateException("이미 승인된 주문입니다.");
-        validateStateTransition(OrderStatus.PENDING, OrderStatus.APPROVED);
-        this.status = OrderStatus.APPROVED;
-        this.approvedDate = LocalDateTime.now();
+        validateStateTransition(OrderStatus.PENDING, nextStatus);
+        this.status = nextStatus;
+        this.processedDate = LocalDateTime.now();
     }
-    //반려
-    public void reject(){
-        validateStateTransition(OrderStatus.PENDING, OrderStatus.REJECTED);
-        this.status = OrderStatus.REJECTED;
-    }
+
     //출고
     public void ship(){
         validateStateTransition(OrderStatus.APPROVED, OrderStatus.SHIPPED);
