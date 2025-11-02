@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorStatus {
     /** 400 BAD_REQUEST */
     VALIDATION_REQUEST_MISSING_EXCEPTION(HttpStatus.BAD_REQUEST, "요청 값이 입력되지 않았습니다."),
+    INVALID_VEHICLE_INFO_EXCEPTION(HttpStatus.BAD_REQUEST, "입력 형식이 잘못되었습니다. 차량번호, 모델, 접수번호는 모두 입력하거나 모두 생략해야 합니다."),
 
     /** 401 UNAUTHORIZED */
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),

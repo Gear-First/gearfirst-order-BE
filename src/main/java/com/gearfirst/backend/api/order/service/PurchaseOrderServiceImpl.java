@@ -10,6 +10,7 @@ import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.enums.OrderStatus;
+import com.gearfirst.backend.common.exception.BadRequestException;
 import com.gearfirst.backend.common.exception.ConflictException;
 import com.gearfirst.backend.common.exception.NotFoundException;
 import com.gearfirst.backend.common.response.ErrorStatus;
@@ -34,8 +35,23 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     public PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request) {
-        if(purchaseOrderRepository.findByReceiptNum(request.getReceiptNum()).isPresent()){
-            throw new ConflictException(ErrorStatus.DUPLICATE_RECEIPT_NUM_EXCEPTION.getMessage());
+        boolean hasVehicleInfo =
+                request.getVehicleModel() != null && !request.getVehicleModel().isBlank() &&
+                request.getVehicleNumber() != null && !request.getVehicleNumber().isBlank() &&
+                request.getReceiptNum() != null && !request.getReceiptNum().isBlank();
+        boolean hasNoVehicleInfo =
+                (request.getVehicleModel() == null || request.getVehicleModel().isBlank()) &&
+                (request.getVehicleNumber() == null || request.getVehicleNumber().isBlank()) &&
+                (request.getReceiptNum() == null || request.getReceiptNum().isBlank());
+
+        if(!(hasVehicleInfo || hasNoVehicleInfo)){
+            throw new BadRequestException(ErrorStatus.INVALID_VEHICLE_INFO_EXCEPTION.getMessage());
+        }
+
+        if(hasVehicleInfo) {
+            if(purchaseOrderRepository.findByReceiptNum(request.getReceiptNum()).isPresent()){
+                throw new ConflictException(ErrorStatus.DUPLICATE_RECEIPT_NUM_EXCEPTION.getMessage());
+            }
         }
         //발주 엔티티 생성
         PurchaseOrder order = PurchaseOrder.builder()
