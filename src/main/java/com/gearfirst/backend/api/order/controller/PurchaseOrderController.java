@@ -4,14 +4,21 @@ import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
+import com.gearfirst.backend.common.dto.response.PageResponse;
 import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -32,15 +39,23 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.REQUEST_PURCHASE_SUCCESS, response);
     }
 
-    /**
-     * TODO:본사용 전체 조회(모든 대리점)
-     */
-//    @Operation(summary = "본사 발주 전체 조회", description = "대리점이 등록한 발주 내역을 조회합니다.")
-//    @GetMapping("/head")
-//    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getAllPurchaseOrders(){
-//        List<PurchaseOrderResponse> list = purchaseOrderService.getAllPurchaseOrders();
-//        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
-//    }
+    @Operation(summary = "본사 발주 전체 조회", description = "대리점이 등록한 발주 내역을 조회합니다.")
+    @GetMapping("/head/orders")
+    public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderResponse>>> searchPurchaseOrders(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate endDate,
+
+            @RequestParam(required = false) String branchCode,
+            @RequestParam(required = false) String partName,
+
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        PageResponse<PurchaseOrderResponse> page =
+        purchaseOrderService.searchPurchaseOrders(startDate, endDate, branchCode, partName, pageable);
+        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
+    }
 
     @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 조회합니다.")
     @GetMapping("/branch")

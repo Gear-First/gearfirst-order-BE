@@ -8,16 +8,26 @@ import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.InventoryClient;
 import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
+import com.gearfirst.backend.api.order.repository.PurchaseOrderQueryRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
+import com.gearfirst.backend.common.dto.response.PageResponse;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.ConflictException;
 import com.gearfirst.backend.common.exception.NotFoundException;
 import com.gearfirst.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +37,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final OrderItemRepository orderItemRepository;
     private final InventoryClient inventoryClient; // Feign Client (inventory-service 연결)
+    private final PurchaseOrderQueryRepository purchaseOrderQueryRepository;
 
 
     /**
@@ -34,24 +45,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     public PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request) {
-        boolean hasVehicleInfo =
-                request.getVehicleModel() != null && !request.getVehicleModel().isBlank() &&
-                request.getVehicleNumber() != null && !request.getVehicleNumber().isBlank() &&
-                request.getReceiptNum() != null && !request.getReceiptNum().isBlank();
-        boolean hasNoVehicleInfo =
-                (request.getVehicleModel() == null || request.getVehicleModel().isBlank()) &&
-                (request.getVehicleNumber() == null || request.getVehicleNumber().isBlank()) &&
-                (request.getReceiptNum() == null || request.getReceiptNum().isBlank());
-
-        if(!(hasVehicleInfo || hasNoVehicleInfo)){
-            throw new ConflictException(ErrorStatus.INVALID_VEHICLE_INFO_EXCEPTION.getMessage());
-        }
-
-        if(hasVehicleInfo) {
-            if(purchaseOrderRepository.findByReceiptNum(request.getReceiptNum()).isPresent()){
-                throw new ConflictException(ErrorStatus.DUPLICATE_RECEIPT_NUM_EXCEPTION.getMessage());
-            }
-        }
+         //차량 정보 검증
+        validateVehicleInfo(request);
         //발주 엔티티 생성
         PurchaseOrder order = PurchaseOrder.builder()
                 .vehicleNumber(request.getVehicleNumber())
@@ -82,22 +77,60 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         return PurchaseOrderResponse.from(order, orderItems);
    }
+   //검증 로직을 별도 메서드로 분리
+   private void validateVehicleInfo(PurchaseOrderRequest request){
+       boolean hasVehicleInfo =
+               request.getVehicleModel() != null && !request.getVehicleModel().isBlank() &&
+                       request.getVehicleNumber() != null && !request.getVehicleNumber().isBlank() &&
+                       request.getReceiptNum() != null && !request.getReceiptNum().isBlank();
+       boolean hasNoVehicleInfo =
+               (request.getVehicleModel() == null || request.getVehicleModel().isBlank()) &&
+                       (request.getVehicleNumber() == null || request.getVehicleNumber().isBlank()) &&
+                       (request.getReceiptNum() == null || request.getReceiptNum().isBlank());
 
+       if(!(hasVehicleInfo || hasNoVehicleInfo)){
+           throw new ConflictException(ErrorStatus.INVALID_VEHICLE_INFO_EXCEPTION.getMessage());
+       }
+       if(hasVehicleInfo) {
+           if(purchaseOrderRepository.findByReceiptNum(request.getReceiptNum()).isPresent()){
+               throw new ConflictException(ErrorStatus.DUPLICATE_RECEIPT_NUM_EXCEPTION.getMessage());
+           }
+       }
+   }
     /**
-     * TODO:본사용 전체 조회(모든 대리점)
+     * 본사용 전체 조회(모든 대리점)
+     * 발주 내역을 조회할 때마다 orderItem도 조회하므로 N+1 문제가 발생할 수 있음-> in 쿼리로 최적화
      */
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<PurchaseOrderResponse> getAllPurchaseOrders(){
-//        List<PurchaseOrder> orders = purchaseOrderRepository.findAllByOrderByRequestDateDesc();
-//
-//        return orders.stream()
-//                .map(order -> {
-//                    List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-//                    return PurchaseOrderResponse.from(order, items);
-//                })
-//                .toList();
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PurchaseOrderResponse> searchPurchaseOrders(
+            LocalDate startDate, LocalDate endDate,
+            String branchCode, String partName,
+            Pageable pageable
+    ) {
+        Page<PurchaseOrder> page = purchaseOrderQueryRepository.search(
+                startDate, endDate,
+                branchCode, partName,
+                pageable
+        );
+        List<Long> orderIds = page.getContent().stream()
+                .map(PurchaseOrder::getId)
+                .toList();
+        //OrderItem을 한번의 In 쿼리로 모두 조회
+        List<OrderItem> orderItems = orderItemRepository.findByPurchaseOrderIdIn(orderIds);
+
+        Map<Long, List<OrderItem>> itemMap = orderItems.stream()
+                .collect(Collectors.groupingBy(item -> item.getPurchaseOrder().getId()));
+        List<PurchaseOrderResponse> content = page.getContent().stream()
+                .map(order -> {
+                    List<OrderItem> items = itemMap.getOrDefault(order.getId(),List.of());
+                    return PurchaseOrderResponse.from(order, items);
+                })
+                .toList();
+
+        Page<PurchaseOrderResponse> dtoPage = new PageImpl<>(content, pageable, page.getTotalElements());
+        return new PageResponse<>(dtoPage);
+    }
 
     //엔지니어용 발주 목록 전체 조회
     //TODO: 날짜 필터링 필요 예) 최근 3개월 발주 내역, 올해 완료된 주문

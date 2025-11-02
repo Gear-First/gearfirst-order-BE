@@ -3,7 +3,11 @@ package com.gearfirst.backend.api.order.service;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
+import com.gearfirst.backend.common.dto.response.PageResponse;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PurchaseOrderService {
@@ -12,7 +16,11 @@ public interface PurchaseOrderService {
 
 
      //본사용 전체 조회(모든 대리점)
-    //List<PurchaseOrderResponse> getAllPurchaseOrders();
+     public PageResponse<PurchaseOrderResponse> searchPurchaseOrders(
+             LocalDate startDate, LocalDate endDate,
+             String branchCode, String partName,
+             Pageable pageable
+     );
 
     //엔지니어용 발주 목록 전체 조회
     List<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId);
