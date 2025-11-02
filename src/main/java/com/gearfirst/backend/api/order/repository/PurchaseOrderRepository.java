@@ -2,13 +2,15 @@ package com.gearfirst.backend.api.order.repository;
 
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.common.enums.OrderStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder,Long> {
     //본사 발주 내역 전체 조회
-    List<PurchaseOrder> findAllByOrderByRequestDateDesc();
+    Page<PurchaseOrder> findAllByOrderByRequestDateDesc(Pageable pageable);
 
     //엔지니어용 발주 내역 조회
     List<PurchaseOrder> findByBranchCodeAndEngineerIdOrderByRequestDateDesc(String branchCode, Long engineerId);

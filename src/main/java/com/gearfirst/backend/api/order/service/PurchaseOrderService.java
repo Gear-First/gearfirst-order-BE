@@ -10,10 +10,10 @@ public interface PurchaseOrderService {
     //대리점 발주 요청 생성
     PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request);
 
-    /**
-     * TODO:본사용 전체 조회(모든 대리점)
-     */
+
+     //본사용 전체 조회(모든 대리점)
     //List<PurchaseOrderResponse> getAllPurchaseOrders();
+
     //엔지니어용 발주 목록 전체 조회
     List<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId);
     //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
@@ -28,6 +28,7 @@ public interface PurchaseOrderService {
     PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId);
     //발주 상세 조회
     PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String branchCode, Long engineerId);
+
     //대리점 발주 취소
     void cancelBranchOrder(Long orderId, String branchCode, Long engineerId);
     //발주 승인

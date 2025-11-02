@@ -88,13 +88,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
 //    @Override
 //    @Transactional(readOnly = true)
-//    public List<HeadquarterPurchaseOrderResponse> getAllPurchaseOrders(){
+//    public List<PurchaseOrderResponse> getAllPurchaseOrders(){
 //        List<PurchaseOrder> orders = purchaseOrderRepository.findAllByOrderByRequestDateDesc();
 //
 //        return orders.stream()
 //                .map(order -> {
 //                    List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-//                    return HeadquarterPurchaseOrderResponse.from(order, items);
+//                    return PurchaseOrderResponse.from(order, items);
 //                })
 //                .toList();
 //    }
