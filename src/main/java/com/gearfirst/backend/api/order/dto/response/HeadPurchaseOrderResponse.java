@@ -6,29 +6,31 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HeadPurchaseOrderResponse extends PurchaseOrderResponse{
+public class HeadPurchaseOrderResponse extends PurchaseOrderDetailResponse{
     private String branchCode;
-
-
-    @Builder(builderMethodName = "hqBuilder")
-    public HeadPurchaseOrderResponse(Long orderId, int totalQuantity, String orderStatus, List<OrderItemResponse> items, String branchCode) {
-        super(orderId, totalQuantity, orderStatus, items);
-        this.branchCode = branchCode;
-    }
+    private int totalQuantity;
 
     public static HeadPurchaseOrderResponse from(PurchaseOrder order, List<OrderItem> items) {
-        return HeadPurchaseOrderResponse.hqBuilder()
+        return HeadPurchaseOrderResponse.builder()
                 .orderId(order.getId())
-                .totalQuantity(order.getTotalQuantity())
-                .orderStatus(order.getStatus().name())
+                .orderNumber(order.getOrderNumber())
+                .status(order.getStatus().name())
+                .totalPrice(order.getTotalPrice())
+                .requestDate(order.getRequestDate())
+                .approvedDate(order.getApprovedDate())
+                .transferDate(order.getTransferDate())
+                .completedDate(order.getCompletedDate())
                 .items(items.stream().map(OrderItemResponse::from).toList())
                 .branchCode(order.getBranchCode())
+                .totalQuantity(order.getTotalQuantity())
                 .build();
     }
 }

@@ -40,13 +40,13 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.REQUEST_PURCHASE_SUCCESS, response);
     }
 
-    @Operation(summary = "본사 발주 전체 조회", description = "대리점이 등록한 발주 내역을 조회합니다.")
-    @GetMapping("/head/orders")
-    public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> searchPurchaseOrders(
+    @Operation(summary = "본사 발주 요청 건 전체 조회", description = "대리점이 요청한 발주 내역을 전체조회 또는 날짜/대리점이름/부품이름으로 필터링하여  조회합니다.")
+    @GetMapping("/head/orders/pending")
+    public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> getPendingOrders(
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate startDate,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate endDate,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 
             @RequestParam(required = false) String branchCode,
             @RequestParam(required = false) String partName,
@@ -54,7 +54,24 @@ public class PurchaseOrderController {
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ){
         PageResponse<HeadPurchaseOrderResponse> page =
-        purchaseOrderService.searchPurchaseOrders(startDate, endDate, branchCode, partName, pageable);
+        purchaseOrderService.getPendingOrders(startDate, endDate, branchCode, partName, pageable);
+        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
+    }
+    @Operation(summary = "본사 발주 전체 조회", description = "대리점이 요청한 발주 내역을 본사에서 승인/반려 후 전체조회 또는 날짜/대리점이름/부품이름으로 필터링하여  조회합니다.")
+    @GetMapping("/head/orders/other")
+    public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> getOtherOrders(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+
+            @RequestParam(required = false) String branchCode,
+            @RequestParam(required = false) String partName,
+
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        PageResponse<HeadPurchaseOrderResponse> page =
+                purchaseOrderService.getOtherOrders(startDate, endDate, branchCode, partName, pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
     }
 

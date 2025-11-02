@@ -99,39 +99,84 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
        }
    }
     /**
-     * 본사용 전체 조회(모든 대리점)
+     * 본사용 발주 승인 대기 상태 전체 조회(모든 대리점)
      * 발주 내역을 조회할 때마다 orderItem도 조회하므로 N+1 문제가 발생할 수 있음-> in 쿼리로 최적화
      */
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<HeadPurchaseOrderResponse> searchPurchaseOrders(
+    public PageResponse<HeadPurchaseOrderResponse> getPendingOrders(
             LocalDate startDate, LocalDate endDate,
             String branchCode, String partName,
             Pageable pageable
     ) {
-        Page<PurchaseOrder> page = purchaseOrderQueryRepository.search(
-                startDate, endDate,
-                branchCode, partName,
-                pageable
-        );
-        List<Long> orderIds = page.getContent().stream()
-                .map(PurchaseOrder::getId)
-                .toList();
-        //OrderItem을 한번의 In 쿼리로 모두 조회
-        List<OrderItem> orderItems = orderItemRepository.findByPurchaseOrderIdIn(orderIds);
+        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchByStatus(
+                startDate, endDate, branchCode, partName, OrderStatus.PENDING, pageable);
+        return mapToPageResponse(page);
+    }
+    /**
+     * 본사용 승인 대기 상태를 제외한 발주 전체 조회(모든 대리점)
+     * 발주 내역을 조회할 때마다 orderItem도 조회하므로 N+1 문제가 발생할 수 있음-> in 쿼리로 최적화
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<HeadPurchaseOrderResponse> getOtherOrders(
+            LocalDate startDate, LocalDate endDate,
+            String branchCode, String partName,
+            Pageable pageable
+    ) {
+        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchByStatus(
+                startDate, endDate, branchCode, partName, null, pageable);
+        return mapToPageResponse(page);
+    }
+    // 공통 변환
+    private PageResponse<HeadPurchaseOrderResponse> mapToPageResponse(Page<PurchaseOrder> page) {
+        List<Long> orderIds = page.getContent().stream().map(PurchaseOrder::getId).toList();
+        List<OrderItem> items = orderItemRepository.findByPurchaseOrderIdIn(orderIds);
+        Map<Long, List<OrderItem>> itemMap = items.stream()
+                .collect(Collectors.groupingBy(i -> i.getPurchaseOrder().getId()));
 
-        Map<Long, List<OrderItem>> itemMap = orderItems.stream()
-                .collect(Collectors.groupingBy(item -> item.getPurchaseOrder().getId()));
         List<HeadPurchaseOrderResponse> content = page.getContent().stream()
-                .map(order -> {
-                    List<OrderItem> items = itemMap.getOrDefault(order.getId(),List.of());
-                    return HeadPurchaseOrderResponse.from(order, items);
-                })
+                .map(order -> HeadPurchaseOrderResponse.from(order, itemMap.getOrDefault(order.getId(), List.of())))
                 .toList();
 
-        Page<HeadPurchaseOrderResponse> dtoPage = new PageImpl<>(content, pageable, page.getTotalElements());
+        Page<HeadPurchaseOrderResponse> dtoPage =
+                new PageImpl<>(content, page.getPageable(), page.getTotalElements());
         return new PageResponse<>(dtoPage);
     }
+    /**
+     * 본사용 발주 승인 대기 상태 전체 조회(모든 대리점)
+     * 발주 내역을 조회할 때마다 orderItem도 조회하므로 N+1 문제가 발생할 수 있음-> in 쿼리로 최적화
+     */
+//    @Override
+//    @Transactional(readOnly = true)
+//    public PageResponse<HeadPurchaseOrderResponse> searchPurchaseOrders(
+//            LocalDate startDate, LocalDate endDate,
+//            String branchCode, String partName,
+//            Pageable pageable
+//    ) {
+//        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchByStatus(
+//                startDate, endDate,
+//                branchCode, partName,
+//                pageable
+//        );
+//        List<Long> orderIds = page.getContent().stream()
+//                .map(PurchaseOrder::getId)
+//                .toList();
+//        //OrderItem을 한번의 In 쿼리로 모두 조회
+//        List<OrderItem> orderItems = orderItemRepository.findByPurchaseOrderIdIn(orderIds);
+//
+//        Map<Long, List<OrderItem>> itemMap = orderItems.stream()
+//                .collect(Collectors.groupingBy(item -> item.getPurchaseOrder().getId()));
+//        List<HeadPurchaseOrderResponse> content = page.getContent().stream()
+//                .map(order -> {
+//                    List<OrderItem> items = itemMap.getOrDefault(order.getId(),List.of());
+//                    return HeadPurchaseOrderResponse.from(order, items);
+//                })
+//                .toList();
+//
+//        Page<HeadPurchaseOrderResponse> dtoPage = new PageImpl<>(content, pageable, page.getTotalElements());
+//        return new PageResponse<>(dtoPage);
+//    }
 
     //엔지니어용 발주 목록 전체 조회
     //TODO: 날짜 필터링 필요 예) 최근 3개월 발주 내역, 올해 완료된 주문

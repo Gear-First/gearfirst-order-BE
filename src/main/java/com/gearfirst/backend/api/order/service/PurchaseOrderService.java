@@ -15,9 +15,14 @@ public interface PurchaseOrderService {
     //대리점 발주 요청 생성
     PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request);
 
-
-     //본사용 전체 조회(모든 대리점)
-     PageResponse<HeadPurchaseOrderResponse> searchPurchaseOrders(
+    //본사용 발주 전체 조회(모든 대리점)-승인 대기 상태
+    PageResponse<HeadPurchaseOrderResponse> getPendingOrders(
+            LocalDate startDate, LocalDate endDate,
+            String branchCode, String partName,
+            Pageable pageable
+    );
+     //본사용 전체 조회(모든 대리점)-나머지 상태
+     PageResponse<HeadPurchaseOrderResponse> getOtherOrders(
              LocalDate startDate, LocalDate endDate,
              String branchCode, String partName,
              Pageable pageable

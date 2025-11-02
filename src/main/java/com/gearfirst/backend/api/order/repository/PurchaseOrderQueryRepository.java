@@ -3,6 +3,7 @@ package com.gearfirst.backend.api.order.repository;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.entity.QOrderItem;
 import com.gearfirst.backend.api.order.entity.QPurchaseOrder;
+import com.gearfirst.backend.common.enums.OrderStatus;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -28,9 +29,10 @@ import static org.springframework.util.StringUtils.hasText;
 public class PurchaseOrderQueryRepository {
     private final JPAQueryFactory query;
 
-    public Page<PurchaseOrder> search(
+    public Page<PurchaseOrder> searchByStatus(
             LocalDate startDate, LocalDate endDate,
             String branchCode, String partName,
+            OrderStatus status,
             Pageable pageable
     ) {
         QPurchaseOrder purchaseOrder = QPurchaseOrder.purchaseOrder;
@@ -38,6 +40,14 @@ public class PurchaseOrderQueryRepository {
         //동적 조건(필터)을 누적할 때 쓰는 가변형 조건 컨테이너
         //내부적으로 논리식을 담고 있고 and(), or() 등으로 조건을 누적할 수 있음
         BooleanBuilder where = new BooleanBuilder();
+
+        if (status != OrderStatus.PENDING) {
+            // 나머지 상태 전체
+            where.and(purchaseOrder.status.ne(OrderStatus.PENDING));
+        } else {
+            // PENDING만
+            where.and(purchaseOrder.status.eq(OrderStatus.PENDING));
+        }
 
         if(hasText(partName)) where.and(orderItem.partName.containsIgnoreCase(partName));
 
