@@ -10,6 +10,7 @@ import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.enums.OrderStatus;
+import com.gearfirst.backend.common.exception.BadRequestException;
 import com.gearfirst.backend.common.exception.ConflictException;
 import com.gearfirst.backend.common.exception.NotFoundException;
 import com.gearfirst.backend.common.response.ErrorStatus;
@@ -44,7 +45,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 (request.getReceiptNum() == null || request.getReceiptNum().isBlank());
 
         if(!(hasVehicleInfo || hasNoVehicleInfo)){
-            throw new ConflictException(ErrorStatus.INVALID_VEHICLE_INFO_EXCEPTION.getMessage());
+            throw new BadRequestException(ErrorStatus.INVALID_VEHICLE_INFO_EXCEPTION.getMessage());
         }
 
         if(hasVehicleInfo) {
