@@ -126,8 +126,10 @@ public class PurchaseOrder {
     }
     //발주 취소
     public void cancel(){
+        if (this.completedDate != null) throw new ConflictException(ErrorStatus.ALREADY_PROCESSED_ORDER_EXCEPTION.getMessage());
         validateStateTransitionCancel(this.status);
         this.status = OrderStatus.CANCELLED;
+        this.completedDate = LocalDateTime.now();
     }
 
     //상태 전이 검증
@@ -136,7 +138,7 @@ public class PurchaseOrder {
             throw new ConflictException(ErrorStatus.INVALID_STATUS_TRANSITION_EXCEPTION.getMessage());
         }
     }
-    //TODO: 상태값이완료 일때 취소할때 이 메세지 왜 안나오지?
+
     private void validateStateTransitionCancel(OrderStatus status){
         if(status != OrderStatus.PENDING && status != OrderStatus.APPROVED){
             throw new ConflictException(ErrorStatus.CANCEL_NOT_ALLOWED_STATUS_EXCEPTION.getMessage());
