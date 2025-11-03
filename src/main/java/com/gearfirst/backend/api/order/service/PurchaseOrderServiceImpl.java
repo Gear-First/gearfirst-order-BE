@@ -19,9 +19,7 @@ import com.gearfirst.backend.common.response.ErrorStatus;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +52,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .vehicleNumber(request.getVehicleNumber())
                 .vehicleModel(request.getVehicleModel())
                 .engineerId(request.getEngineerId())
+                .engineerName(request.getEngineerName())
+                .engineerRole(request.getEngineerRole())
                 .branchCode(request.getBranchCode())
                 .receiptNum(request.getReceiptNum())
                 .build();
@@ -152,17 +152,31 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
     //엔지니어용 발주 목록 전체 조회
     //날짜별로 필터링 되는 목록 전체 조회
-    //TODO: 날짜 필터링 필요 예) 최근 3개월 발주 내역, 올해 완료된 주문
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId) {
-        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdOrderByRequestDateDesc(branchCode, engineerId);
-        return orders.stream()
+    public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrders(
+            String branchCode, Long engineerId,
+            LocalDate startDate, LocalDate endDate,
+            Pageable pageable
+    ) {
+        Slice<PurchaseOrder> orders;
+
+        if(startDate != null && endDate != null){
+            orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdAndRequestDateBetweenOrderByRequestDateDesc(
+                    branchCode, engineerId, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+        } else {
+            orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdOrderByRequestDateDesc(branchCode, engineerId, pageable);
+        }
+        if(orders.isEmpty()){
+            throw new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage());
+        }
+        List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
                 .map(order -> {
                     List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-                            return PurchaseOrderDetailResponse.from(order, items);
+                    return PurchaseOrderDetailResponse.from(order, items);
                 })
                 .toList();
+        return new PageResponse<>(new SliceImpl<>(content, pageable, orders.hasContent()));
 
     }
 
@@ -170,21 +184,34 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     //페이지네이션
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(String branchCode, Long engineerId, String filterType) {
+    public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(
+            String branchCode, Long engineerId, String filterType,
+            LocalDate startDate, LocalDate endDate, Pageable pageable
+    ) {
+        Slice<PurchaseOrder> orders;
+
         List<OrderStatus> statusList = switch (filterType.toLowerCase()){
             case "ready" -> List.of(OrderStatus.PENDING, OrderStatus.APPROVED, OrderStatus.SHIPPED);
-            case "completed" -> List.of(OrderStatus.COMPLETED,OrderStatus.USED_IN_REPAIR);
+            case "completed" -> List.of(OrderStatus.COMPLETED);
             case "cancelled" -> List.of(OrderStatus.REJECTED,OrderStatus.CANCELLED);
             default -> throw new IllegalArgumentException("유효하지 않은 필터 타입입니다. (ready, completed, cancelled 중하나여야 합니다.)");
         };
-        List<PurchaseOrder> orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(branchCode, engineerId, statusList);
-
-        return orders.stream()
+        if(startDate != null && endDate != null){
+            orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdAndStatusInAndRequestDateBetweenOrderByRequestDateDesc(
+                    branchCode, engineerId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+        } else {
+            orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(branchCode, engineerId, statusList, pageable);
+        }
+        if(orders.isEmpty()){
+            throw new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage());
+        }
+        List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
                 .map(order -> {
                     List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
                     return PurchaseOrderDetailResponse.from(order, items);
                 })
                 .toList();
+        return new PageResponse<>(new SliceImpl<>(content, pageable, orders.hasContent()));
     }
 
 
@@ -200,20 +227,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         return PurchaseOrderResponse.from(order, items);
     }
-    /**
-     * 수리 완료 처리
-     */
-//    @Transactional
-//    @Override
-//    public PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
-//        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
-//        //상태변경
-//        order.completeRepair();
-//        // 부품 목록 조회
-//        List<OrderItem> items = getOrderItems(order);
-//
-//        return PurchaseOrderResponse.from(order, items);
-//    }
+
     /**
      * 공통: 발주 조회 메서드
      */

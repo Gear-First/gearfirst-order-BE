@@ -13,6 +13,7 @@ import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -87,19 +88,26 @@ public class PurchaseOrderController {
 
     @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 조회합니다.")
     @GetMapping("/branch")
-    public ResponseEntity<ApiResponse<List<PurchaseOrderDetailResponse>>> getBranchPurchaseOrders(
-            @RequestParam String branchCode, @RequestParam Long engineerId
+    public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderDetailResponse>>> getBranchPurchaseOrders(
+            @RequestParam String branchCode, @RequestParam Long engineerId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            Pageable pageable
+
     ){
-        List<PurchaseOrderDetailResponse> list = purchaseOrderService.getBranchPurchaseOrders(branchCode,engineerId);
+        PageResponse<PurchaseOrderDetailResponse> list = purchaseOrderService.getBranchPurchaseOrders(branchCode,engineerId,startDate,endDate,pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
     }
 
     @Operation(summary = "대리점 발주 상태 그룹별 조회", description = "준비 / 완료 / 취소·반려 그룹별로 발주 내역을 조회합니다.")
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<List<PurchaseOrderDetailResponse>>> getBranchPurchaseOrdersByFilter(
-            @RequestParam String branchCode, @RequestParam Long engineerId,  @RequestParam String filterType  // "ready", "completed", "cancelled"
+    public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderDetailResponse>>> getBranchPurchaseOrdersByFilter(
+            @RequestParam String branchCode, @RequestParam Long engineerId,  @RequestParam String filterType,  // "ready", "completed", "cancelled"
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            Pageable pageable
     ){
-        List<PurchaseOrderDetailResponse> list = purchaseOrderService.getBranchPurchaseOrdersByFilter(branchCode, engineerId, filterType);
+        PageResponse<PurchaseOrderDetailResponse> list = purchaseOrderService.getBranchPurchaseOrdersByFilter(branchCode, engineerId, filterType,startDate,endDate,pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
     }
 
@@ -125,13 +133,6 @@ public class PurchaseOrderController {
         PurchaseOrderResponse response = purchaseOrderService.getCompleteRepairPartsList(receiptNum,vehicleNumber,branchCode,engineerId);
         return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
     }
-
-//    @Operation(summary = "대리점에서 발주 상태 수리 완료 변경 후 부품 반환", description = "대리점에서 발주 상태를 '수리에 사용됨'으로 변경하고, 해당 발주의 부품 목록을 반환합니다.")
-//    @PostMapping("/complete/parts/{receiptNum}/{vehicleNumber}")
-//    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> completeRepairParts(@PathVariable String receiptNum, @PathVariable String vehicleNumber, @RequestParam String branchCode, @RequestParam Long engineerId ){
-//        PurchaseOrderResponse response = purchaseOrderService.completeRepairPartsList(receiptNum,vehicleNumber,branchCode,engineerId);
-//        return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
-//    }
 
 
     @Operation(summary = "발주 승인", description = "본사에서 발주를 승인합니다.")

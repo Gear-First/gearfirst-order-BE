@@ -31,14 +31,16 @@ public interface PurchaseOrderService {
      HeadPurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId);
 
      //엔지니어용 발주 목록 전체 조회
-    List<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId);
+     PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId, LocalDate startDate, LocalDate endDate, Pageable pageable);
     //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
-    List<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(String branchCode, Long engineerId, String filterType);
+    PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(
+            String branchCode, Long engineerId, String filterType,
+            LocalDate startDate, LocalDate endDate, Pageable pageable
+    );
 
     //발주 부품 조회
     PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId);
-    //수리 완료 처리
-    //PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId);
+
     //발주 상세 조회
     PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String branchCode, Long engineerId);
 

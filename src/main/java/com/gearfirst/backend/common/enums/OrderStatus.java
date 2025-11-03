@@ -6,8 +6,7 @@ public enum OrderStatus {
     REJECTED("반려"),
     SHIPPED("출고 중"),
     COMPLETED("납품 완료"),
-    CANCELLED("취소"),
-    USED_IN_REPAIR("수리에 사용 됨");
+    CANCELLED("취소");
 
     private final String description;
 

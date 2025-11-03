@@ -2,8 +2,11 @@ package com.gearfirst.backend.api.order.repository;
 
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.common.enums.OrderStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,11 +16,12 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder,Lon
     //Optional<PurchaseOrder> findById(Long orderId);
 
     //엔지니어용 발주 내역 조회
-    List<PurchaseOrder> findByBranchCodeAndEngineerIdOrderByRequestDateDesc(String branchCode, Long engineerId);
-    //Slice<PurchaseOrder> findByBranchCodeAndEngineerIdOrderByRequestDateDesc(String branchCode, Long engineerId);
+    Slice<PurchaseOrder> findByBranchCodeAndEngineerIdOrderByRequestDateDesc(String branchCode, Long engineerId, Pageable pageable);
+    Slice<PurchaseOrder> findByBranchCodeAndEngineerIdAndRequestDateBetweenOrderByRequestDateDesc(String branchCode, Long engineerId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     //대리점 상태 그룹별로 목록 조회
-     List<PurchaseOrder> findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(String branchCode, Long engineerId, List<OrderStatus> statuses);
+    Slice<PurchaseOrder> findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(String branchCode, Long engineerId, List<OrderStatus> statuses, Pageable pageable);
+    Slice<PurchaseOrder> findByBranchCodeAndEngineerIdAndStatusInAndRequestDateBetweenOrderByRequestDateDesc(String branchCode, Long engineerId, List<OrderStatus> statuses, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     //본사 상태별 발주 목록 확인
     List<PurchaseOrder> findByStatusOrderByRequestDateDesc(OrderStatus status);
@@ -30,4 +34,8 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder,Lon
 
     //수리 접수 번호 중복체크
     Optional<PurchaseOrder> findByReceiptNum(String receiptNum);
+
+
+
+
 }
