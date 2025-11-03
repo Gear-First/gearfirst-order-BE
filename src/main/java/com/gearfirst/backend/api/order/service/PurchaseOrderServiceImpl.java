@@ -167,9 +167,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         } else {
             orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdOrderByRequestDateDesc(branchCode, engineerId, pageable);
         }
-        if(orders.isEmpty()){
-            throw new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage());
-        }
+
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
                 .map(order -> {
                     List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
@@ -201,9 +199,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                     branchCode, engineerId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
         } else {
             orders = purchaseOrderRepository.findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(branchCode, engineerId, statusList, pageable);
-        }
-        if(orders.isEmpty()){
-            throw new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage());
         }
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
                 .map(order -> {
