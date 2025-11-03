@@ -129,11 +129,6 @@ public class PurchaseOrder {
         validateStateTransitionCancel(this.status);
         this.status = OrderStatus.CANCELLED;
     }
-    //수리용 부품 발주 완료
-    public void completeRepair(){
-        validateStateTransition(OrderStatus.COMPLETED, OrderStatus.USED_IN_REPAIR);
-        this.status = OrderStatus.USED_IN_REPAIR;
-    }
 
     //상태 전이 검증
     private void validateStateTransition(OrderStatus expected, OrderStatus next){
