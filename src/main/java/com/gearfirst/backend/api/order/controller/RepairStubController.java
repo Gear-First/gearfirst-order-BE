@@ -1,6 +1,6 @@
 package com.gearfirst.backend.api.order.controller;
 
-import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
+import com.gearfirst.backend.api.order.infra.dto.ReceiptCarResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
