@@ -1,6 +1,6 @@
 package com.gearfirst.backend.api.order.infra.client;
 
-import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
+import com.gearfirst.backend.api.order.infra.dto.ReceiptCarResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
