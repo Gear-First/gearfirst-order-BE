@@ -2,8 +2,6 @@ package com.gearfirst.backend.api.order.repository;
 
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.common.enums.OrderStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;

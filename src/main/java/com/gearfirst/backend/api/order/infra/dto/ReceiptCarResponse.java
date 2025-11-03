@@ -1,4 +1,4 @@
-package com.gearfirst.backend.api.order.infra.client.dto;
+package com.gearfirst.backend.api.order.infra.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

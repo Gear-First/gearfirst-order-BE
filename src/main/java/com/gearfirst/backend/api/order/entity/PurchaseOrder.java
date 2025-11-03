@@ -3,11 +3,15 @@ package com.gearfirst.backend.api.order.entity;
 
 import com.gearfirst.backend.api.order.command.ShipmentCommand;
 import com.gearfirst.backend.common.enums.OrderStatus;
+import com.gearfirst.backend.common.exception.BadRequestException;
+import com.gearfirst.backend.common.exception.ConflictException;
+import com.gearfirst.backend.common.response.ErrorStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.concurrent.ConcurrentException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -70,6 +74,9 @@ public class PurchaseOrder {
     @Column(columnDefinition = "text")
     private String note;                    //비고
 
+    @Column(name="warehouse_code")
+    private String warehouseCode;
+
 
     @Builder
     public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String branchCode,
@@ -95,9 +102,9 @@ public class PurchaseOrder {
     }
     //승인 또는 반려 처리
     public void decide(OrderStatus nextStatus) {
-        if (this.processedDate != null) throw new IllegalStateException("이미 처리된 주문입니다.");
+        if (this.processedDate != null) throw new ConflictException(ErrorStatus.ALREADY_PROCESSED_ORDER_EXCEPTION.getMessage());
         if (nextStatus != OrderStatus.APPROVED && nextStatus != OrderStatus.REJECTED) {
-            throw new IllegalArgumentException("승인 또는 반려 상태만 결정할 수 있습니다.");
+            throw new BadRequestException(ErrorStatus.INVALID_DECISION_STATUS_EXCEPTION.getMessage());
         }
 
         validateStateTransition(OrderStatus.PENDING, nextStatus);
@@ -131,14 +138,12 @@ public class PurchaseOrder {
     //상태 전이 검증
     private void validateStateTransition(OrderStatus expected, OrderStatus next){
         if(this.status != expected){
-            throw new IllegalStateException(
-                    String.format("현재 상태(%s)에서는 %s 상태로 전환할 수 없습니다.", this.status,next)
-            );
+            throw new ConflictException(ErrorStatus.INVALID_STATUS_TRANSITION_EXCEPTION.getMessage());
         }
     }
     private void validateStateTransitionCancel(OrderStatus status){
         if(status != OrderStatus.PENDING && status != OrderStatus.APPROVED){
-            throw new IllegalStateException("승인 대기 또는 승인 완료 상태의 발주만 취소할 수 있습니다.");
+            throw new ConflictException(ErrorStatus.CANCEL_NOT_ALLOWED_STATUS_EXCEPTION.getMessage());
         }
     }
     //총 금액 계산
@@ -154,17 +159,27 @@ public class PurchaseOrder {
                 .sum();
     }
 
+    public void updateNote(String note){
+        // 상태 검증 (예: 승인 대기 상태일 때만 수정 가능)
+        if (this.status != OrderStatus.PENDING) {
+            throw new ConflictException(ErrorStatus.NOTE_UPDATE_NOT_ALLOWED_EXCEPTION.getMessage());
+        }
+        this.note = note;
+    }
+
     //금액 업데이트
     public void updateTotalPrice(int totalPrice){
         this.totalPrice = totalPrice;
     }
 
-    //창고 출고 명령 객체 생성
-    public ShipmentCommand createShipmentCommand(){
+    //창고 출고 명령 상태 검증
+    public void createShipmentCommand(){
         if(this.status != OrderStatus.APPROVED){
-            throw new IllegalArgumentException("승인된 주문만 출고 지시를 생성할 수 있습니다.");
+            throw new BadRequestException(ErrorStatus.SHIPMENT_NOT_ALLOWED_EXCEPTION.getMessage());
         }
-        return new ShipmentCommand(this.id, this.branchCode,this.vehicleNumber,this.vehicleModel);
+    }
+    public void assignWarehouse(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
     }
 
 }

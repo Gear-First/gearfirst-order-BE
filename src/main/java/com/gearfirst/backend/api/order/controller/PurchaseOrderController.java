@@ -1,5 +1,6 @@
 package com.gearfirst.backend.api.order.controller;
 
+import com.gearfirst.backend.api.order.dto.request.NoteRequest;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
@@ -146,16 +147,16 @@ public class PurchaseOrderController {
     }
 
 
-    @Operation(summary = "발주 승인", description = "본사에서 발주를 승인합니다.")
-    @PatchMapping("/{orderId}/{warehouseId}/approve")
-    public ResponseEntity<ApiResponse<Void>> approve(@PathVariable Long orderId, @PathVariable Long warehouseId){
-        purchaseOrderService.approveOrder(orderId, warehouseId);
-        return ApiResponse.success_only(SuccessStatus.APPROVE_PURCHASE_SUCCESS);
-    }
+//    @Operation(summary = "발주 승인", description = "본사에서 발주를 승인합니다.")
+//    @PatchMapping("/{orderId}/{warehouseId}/approve")
+//    public ResponseEntity<ApiResponse<Void>> approve(@PathVariable Long orderId, @PathVariable Long warehouseId, @RequestBody NoteRequest request){
+//        purchaseOrderService.approveOrder(orderId, warehouseId, request.getNote());
+//        return ApiResponse.success_only(SuccessStatus.APPROVE_PURCHASE_SUCCESS);
+//    }
     @Operation(summary = "발주 반려", description = "본사에서 발주를 반려합니다.")
     @PatchMapping("/{orderId}/reject")
-    public ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long orderId){
-        purchaseOrderService.rejectOrder(orderId);
+    public ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long orderId, @RequestBody NoteRequest request){
+        purchaseOrderService.rejectOrder(orderId, request.getNote());
         return ApiResponse.success_only(SuccessStatus.REJECT_PURCHASE_SUCCESS);
     }
 

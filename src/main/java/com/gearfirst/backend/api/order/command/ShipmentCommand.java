@@ -11,6 +11,5 @@ import lombok.Getter;
 public class ShipmentCommand {
     private Long orderId;
     private String branchCode;
-    private String vehicleNumber;
-    private String vehicleModel;
+    private String warehouseCode;
 }

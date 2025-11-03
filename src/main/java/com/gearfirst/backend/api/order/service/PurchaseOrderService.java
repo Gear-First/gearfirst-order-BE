@@ -48,7 +48,7 @@ public interface PurchaseOrderService {
     //대리점 발주 취소
     void cancelBranchOrder(Long orderId, String branchCode, Long engineerId);
     //발주 승인
-    void approveOrder(Long orderId, Long warehouseId);
+    //void approveOrder(Long orderId, Long warehouseId, String note);
     //발주 반려
-    void rejectOrder(Long orderId);
+    void rejectOrder(Long orderId, String note);
 }

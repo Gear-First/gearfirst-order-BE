@@ -11,7 +11,8 @@ public enum ErrorStatus {
     /** 400 BAD_REQUEST */
     VALIDATION_REQUEST_MISSING_EXCEPTION(HttpStatus.BAD_REQUEST, "요청 값이 입력되지 않았습니다."),
     INVALID_VEHICLE_INFO_EXCEPTION(HttpStatus.BAD_REQUEST, "입력 형식이 잘못되었습니다. 차량번호, 모델, 접수번호는 모두 입력하거나 모두 생략해야 합니다."),
-
+    INVALID_DECISION_STATUS_EXCEPTION(HttpStatus.BAD_REQUEST,"승인 또는 반려 상태만 지정할 수 있습니다."),
+    SHIPMENT_NOT_ALLOWED_EXCEPTION(HttpStatus.BAD_REQUEST, "승인되지 않은 주문에는 출고를 지시를 생성할 수 없습니다."),
     /** 401 UNAUTHORIZED */
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
 
@@ -22,7 +23,10 @@ public enum ErrorStatus {
 
     /** 409 CONFLICT */
     DUPLICATE_RECEIPT_NUM_EXCEPTION(HttpStatus.CONFLICT, "이미 존재하는 수리 번호입니다."),
-
+    ALREADY_PROCESSED_ORDER_EXCEPTION(HttpStatus.CONFLICT, "이미 처리된 발주 건 입니다."),
+    INVALID_STATUS_TRANSITION_EXCEPTION(HttpStatus.CONFLICT, "현재 상태에서 요청한 상태로 전환할 수 없습니다."),
+    CANCEL_NOT_ALLOWED_STATUS_EXCEPTION(HttpStatus.CONFLICT, "승인 대기 또는 승인 완료 상태의 발주만 취소할 수 있습니다."),
+    NOTE_UPDATE_NOT_ALLOWED_EXCEPTION(HttpStatus.CONFLICT, "승인 대기 상태에서만 비고 수정이 가능합니다."),
     /** 500 SERVER_ERROR */
     FAIL_UPLOAD_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 실패하였습니다."),
 

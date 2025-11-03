@@ -1,27 +1,11 @@
 package com.gearfirst.backend.api.order.service;
 
-import com.gearfirst.backend.api.order.dto.request.OrderItemRequest;
-import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
-import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
-import com.gearfirst.backend.api.order.entity.OrderItem;
-import com.gearfirst.backend.api.order.entity.PurchaseOrder;
-import com.gearfirst.backend.api.order.fixture.PurchaseOrderFixture;
 import com.gearfirst.backend.api.order.infra.client.InventoryClient;
 import com.gearfirst.backend.api.order.infra.client.RepairClient;
-import com.gearfirst.backend.api.order.infra.client.dto.InventoryResponse;
-import com.gearfirst.backend.api.order.infra.client.dto.OutboundRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
-import com.gearfirst.backend.common.enums.OrderStatus;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mock;
 
 

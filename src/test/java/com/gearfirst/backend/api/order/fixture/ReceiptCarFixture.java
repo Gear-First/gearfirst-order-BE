@@ -1,6 +1,6 @@
 package com.gearfirst.backend.api.order.fixture;
 
-import com.gearfirst.backend.api.order.infra.client.dto.ReceiptCarResponse;
+import com.gearfirst.backend.api.order.infra.dto.ReceiptCarResponse;
 
 import java.util.List;
 
