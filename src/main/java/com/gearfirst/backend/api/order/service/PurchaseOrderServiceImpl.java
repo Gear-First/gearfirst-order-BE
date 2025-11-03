@@ -176,7 +176,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                     return PurchaseOrderDetailResponse.from(order, items);
                 })
                 .toList();
-        return new PageResponse<>(new SliceImpl<>(content, pageable, orders.hasContent()));
+        return new PageResponse<>(new SliceImpl<>(content, pageable, orders.hasNext()));
 
     }
 
@@ -211,7 +211,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                     return PurchaseOrderDetailResponse.from(order, items);
                 })
                 .toList();
-        return new PageResponse<>(new SliceImpl<>(content, pageable, orders.hasContent()));
+        return new PageResponse<>(new SliceImpl<>(content, pageable, orders.hasNext()));
     }
 
 
