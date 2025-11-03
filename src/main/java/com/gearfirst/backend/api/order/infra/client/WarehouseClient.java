@@ -5,7 +5,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "gearfirst-warehouse", url = "http://localhost:8081")
+@FeignClient(name = "gearfirst-warehouse", url = "${warehouse.url}")
+//@FeignClient(name = "gearfirst-warehouse", url = "http://localhost:8080")
 public interface WarehouseClient {
     @PostMapping("/api/v1/shipping")
     void create(@RequestBody WarehouseShippingRequest request);

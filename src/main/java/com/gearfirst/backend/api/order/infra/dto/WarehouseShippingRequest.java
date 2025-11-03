@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Getter
@@ -18,6 +19,7 @@ public class WarehouseShippingRequest {
     private String expectedShipDate; //발주 승인, 출고 지정일
     private String remark;              //비고
     private List<WarehouseShippingLineRequest> lines;      //부품 리스트
+    private String shippingNo;              //TODO: 출고번호 뺄예정
 
     public static WarehouseShippingRequest from(PurchaseOrder order,List<OrderItem> items) {
         List<WarehouseShippingLineRequest> lines = items.stream()
@@ -31,10 +33,11 @@ public class WarehouseShippingRequest {
         return new WarehouseShippingRequest(
                 order.getBranchCode(),          // branchName
                 order.getWarehouseCode(),       // warehouseCode
-                order.getRequestDate().toString(),   // requestedAt
-                order.getProcessedDate().toString(),  // expectedShipDate
+                order.getRequestDate().atOffset(ZoneOffset.ofHours(9)).toString(),   // requestedAt
+                order.getProcessedDate().atOffset(ZoneOffset.ofHours(9)).toString(),  // expectedShipDate
                 order.getNote(),            // remark
-                lines
+                lines,
+                null
         );
     }
 }

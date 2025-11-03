@@ -31,24 +31,23 @@ public interface PurchaseOrderService {
      HeadPurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId);
 
      //엔지니어용 발주 목록 전체 조회
-    List<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId);
+     PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrders(String branchCode, Long engineerId, LocalDate startDate, LocalDate endDate, Pageable pageable);
     //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
-    List<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(String branchCode, Long engineerId, String filterType);
-    /**
-     * TODO: 본사 상태별 조회
-     */
-    //List<PurchaseOrderResponse> getHeadPurchaseOrdersByStatus(String status);
+    PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(
+            String branchCode, Long engineerId, String filterType,
+            LocalDate startDate, LocalDate endDate, Pageable pageable
+    );
+
     //발주 부품 조회
     PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId);
-    //수리 완료 처리
-    PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId);
+
     //발주 상세 조회
     PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String branchCode, Long engineerId);
 
     //대리점 발주 취소
     void cancelBranchOrder(Long orderId, String branchCode, Long engineerId);
     //발주 승인
-    //void approveOrder(Long orderId, Long warehouseId, String note);
+    void approveOrder(Long orderId,String note);
     //발주 반려
     void rejectOrder(Long orderId, String note);
 }
