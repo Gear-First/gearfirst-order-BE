@@ -29,6 +29,7 @@ public enum ErrorStatus {
     NOTE_UPDATE_NOT_ALLOWED_EXCEPTION(HttpStatus.CONFLICT, "승인 대기 상태에서만 비고 수정이 가능합니다."),
     /** 500 SERVER_ERROR */
     FAIL_UPLOAD_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 실패하였습니다."),
+    APPROVED_ORDER_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,"발주 승인을 실패하였습니다."),
 
     ;
 

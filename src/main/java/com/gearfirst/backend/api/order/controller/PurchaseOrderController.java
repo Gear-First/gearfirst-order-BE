@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -104,18 +103,6 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,list);
     }
 
-    /**
-     * TODO:본사 상태별 조회
-     */
-//    @Operation(summary = "본사 발주 상태별 조회", description = "승인대기, 승인완료, 반려, 출고중, 납품완료, 취소 상태별로 발주 내역을 조회합니다.")
-//    @GetMapping("/head/status")
-//    public ResponseEntity<ApiResponse<List<PurchaseOrderResponse>>> getHeadPurchaseOrdersByStatus(
-//            @RequestParam String status  // "PENDING", "APPROVED", "REJECTED", "SHIPPED", "COMPLETED", "CANCELLED"
-//    ) {
-//        List<PurchaseOrderResponse> list = purchaseOrderService.getHeadPurchaseOrdersByStatus(status);
-//        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS, list);
-//    }
-
     @Operation(summary = "대리점에서 발주 상세 조회", description = "특정 발주 번호 상세 조회")
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<PurchaseOrderDetailResponse>> getPurchaseOrderDetail(
@@ -139,20 +126,20 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
     }
 
-    @Operation(summary = "대리점에서 발주 상태 수리 완료 변경 후 부품 반환", description = "대리점에서 발주 상태를 '수리에 사용됨'으로 변경하고, 해당 발주의 부품 목록을 반환합니다.")
-    @PostMapping("/complete/parts/{receiptNum}/{vehicleNumber}")
-    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> completeRepairParts(@PathVariable String receiptNum, @PathVariable String vehicleNumber, @RequestParam String branchCode, @RequestParam Long engineerId ){
-        PurchaseOrderResponse response = purchaseOrderService.completeRepairPartsList(receiptNum,vehicleNumber,branchCode,engineerId);
-        return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
-    }
-
-
-//    @Operation(summary = "발주 승인", description = "본사에서 발주를 승인합니다.")
-//    @PatchMapping("/{orderId}/{warehouseId}/approve")
-//    public ResponseEntity<ApiResponse<Void>> approve(@PathVariable Long orderId, @PathVariable Long warehouseId, @RequestBody NoteRequest request){
-//        purchaseOrderService.approveOrder(orderId, warehouseId, request.getNote());
-//        return ApiResponse.success_only(SuccessStatus.APPROVE_PURCHASE_SUCCESS);
+//    @Operation(summary = "대리점에서 발주 상태 수리 완료 변경 후 부품 반환", description = "대리점에서 발주 상태를 '수리에 사용됨'으로 변경하고, 해당 발주의 부품 목록을 반환합니다.")
+//    @PostMapping("/complete/parts/{receiptNum}/{vehicleNumber}")
+//    public ResponseEntity<ApiResponse<PurchaseOrderResponse>> completeRepairParts(@PathVariable String receiptNum, @PathVariable String vehicleNumber, @RequestParam String branchCode, @RequestParam Long engineerId ){
+//        PurchaseOrderResponse response = purchaseOrderService.completeRepairPartsList(receiptNum,vehicleNumber,branchCode,engineerId);
+//        return ApiResponse.success(SuccessStatus.SEARCH_PARTS_SUCCESS,response);
 //    }
+
+
+    @Operation(summary = "발주 승인", description = "본사에서 발주를 승인합니다.")
+    @PatchMapping("/{orderId}/approve")
+    public ResponseEntity<ApiResponse<Void>> approve(@PathVariable Long orderId, @RequestBody NoteRequest request){
+        purchaseOrderService.approveOrder(orderId, request.getNote());
+        return ApiResponse.success_only(SuccessStatus.APPROVE_PURCHASE_SUCCESS);
+    }
     @Operation(summary = "발주 반려", description = "본사에서 발주를 반려합니다.")
     @PatchMapping("/{orderId}/reject")
     public ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long orderId, @RequestBody NoteRequest request){

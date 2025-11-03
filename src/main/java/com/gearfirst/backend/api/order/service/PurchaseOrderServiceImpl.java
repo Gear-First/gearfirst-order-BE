@@ -8,16 +8,17 @@ import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.WarehouseClient;
+import com.gearfirst.backend.api.order.infra.dto.WarehouseShippingRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderQueryRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.common.dto.response.PageResponse;
 import com.gearfirst.backend.common.enums.OrderStatus;
-import com.gearfirst.backend.common.exception.BadRequestException;
-import com.gearfirst.backend.common.exception.ConflictException;
-import com.gearfirst.backend.common.exception.NotFoundException;
+import com.gearfirst.backend.common.exception.*;
 import com.gearfirst.backend.common.response.ErrorStatus;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional              //내부의 모든 public 메서드에 자동으로 트랜잭션 적용
@@ -148,42 +150,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         return HeadPurchaseOrderDetailResponse.from(order, items);
     }
 
-    /**
-     * 본사용 발주 승인 대기 상태 전체 조회(모든 대리점)
-     * 발주 내역을 조회할 때마다 orderItem도 조회하므로 N+1 문제가 발생할 수 있음-> in 쿼리로 최적화
-     */
-//    @Override
-//    @Transactional(readOnly = true)
-//    public PageResponse<HeadPurchaseOrderResponse> searchPurchaseOrders(
-//            LocalDate startDate, LocalDate endDate,
-//            String branchCode, String partName,
-//            Pageable pageable
-//    ) {
-//        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchByStatus(
-//                startDate, endDate,
-//                branchCode, partName,
-//                pageable
-//        );
-//        List<Long> orderIds = page.getContent().stream()
-//                .map(PurchaseOrder::getId)
-//                .toList();
-//        //OrderItem을 한번의 In 쿼리로 모두 조회
-//        List<OrderItem> orderItems = orderItemRepository.findByPurchaseOrderIdIn(orderIds);
-//
-//        Map<Long, List<OrderItem>> itemMap = orderItems.stream()
-//                .collect(Collectors.groupingBy(item -> item.getPurchaseOrder().getId()));
-//        List<HeadPurchaseOrderResponse> content = page.getContent().stream()
-//                .map(order -> {
-//                    List<OrderItem> items = itemMap.getOrDefault(order.getId(),List.of());
-//                    return HeadPurchaseOrderResponse.from(order, items);
-//                })
-//                .toList();
-//
-//        Page<HeadPurchaseOrderResponse> dtoPage = new PageImpl<>(content, pageable, page.getTotalElements());
-//        return new PageResponse<>(dtoPage);
-//    }
-
     //엔지니어용 발주 목록 전체 조회
+    //날짜별로 필터링 되는 목록 전체 조회
     //TODO: 날짜 필터링 필요 예) 최근 3개월 발주 내역, 올해 완료된 주문
     @Override
     @Transactional(readOnly = true)
@@ -199,6 +167,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     }
 
     //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
+    //페이지네이션
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(String branchCode, Long engineerId, String filterType) {
@@ -218,22 +187,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .toList();
     }
 
-    /**
-     * TODO: 본사 상태별 조회
-     */
-//    @Override
-//    public List<HeadquarterPurchaseOrderResponse> getHeadPurchaseOrdersByStatus(String status){
-//        OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
-//        List<PurchaseOrder> orders =
-//                purchaseOrderRepository.findByStatusOrderByRequestDateDesc(orderStatus);
-//
-//        return orders.stream()
-//                .map(order -> {
-//                    List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
-//                    return HeadquarterPurchaseOrderResponse.from(order, items);
-//                })
-//                .toList();
-//    }
 
     /**
      + 수리 완료 버튼 클릭 시 발주 부품 조회
@@ -250,17 +203,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     /**
      * 수리 완료 처리
      */
-    @Transactional
-    @Override
-    public PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
-        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
-        //상태변경
-        order.completeRepair();
-        // 부품 목록 조회
-        List<OrderItem> items = getOrderItems(order);
-
-        return PurchaseOrderResponse.from(order, items);
-    }
+//    @Transactional
+//    @Override
+//    public PurchaseOrderResponse completeRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
+//        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
+//        //상태변경
+//        order.completeRepair();
+//        // 부품 목록 조회
+//        List<OrderItem> items = getOrderItems(order);
+//
+//        return PurchaseOrderResponse.from(order, items);
+//    }
     /**
      * 공통: 발주 조회 메서드
      */
@@ -280,7 +233,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     }
 
     /**
-     * 발주 상세 조회
+     * 대리점 발주 상세 조회
      */
     @Override
     @Transactional(readOnly = true)
@@ -306,32 +259,41 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     /**
      * 발주 승인
      */
-//    @Override
-//    @Transactional
-//    public void approveOrder(Long orderId,String note) {
-//        //발주서 조회
-//        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
-//                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
-//        String code = order.getBranchCode();
-//        //발주 품목 조회
-//        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
-//        order.createShipmentCommand();
-//        try {
-//            //창고지정
-//            order.assignWarehouse(code);
-//            //비고 저장
-//            order.updateNote(note);
-//            //상태 변경
-//            order.decide(OrderStatus.APPROVED);
-//            //출고 명령 생성 요청(warehouse 서비스로 전송)
-//            WarehouseShippingRequest request = WarehouseShippingRequest.from(order,items);
-//
-//            //warehouse 서비스로 전달
-//            warehouseClient.create(request);
-//        } catch (Exception e) {
-//            //warehouseClient.cancel(orderId);
-//        }
-//    }
+    @Override
+    @Transactional
+    public void approveOrder(Long orderId,String note) {
+        //발주서 조회
+        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+                .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
+        String code = order.getBranchCode();
+        //발주 품목 조회
+        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
+
+        try {
+            //비고 저장
+            order.updateNote(note);
+            //상태 변경
+            order.decide(OrderStatus.APPROVED);
+            //창고지정
+            order.assignWarehouse(code);
+            order.createShipmentCommand();
+
+            //출고 명령 생성 요청(warehouse 서비스로 전송)
+            WarehouseShippingRequest request = WarehouseShippingRequest.from(order,items);
+
+            //warehouse 서비스로 전달
+            warehouseClient.create(request);
+        } catch (FeignException e) {
+            log.error(" Warehouse 서버 호출 실패!");
+            log.error("상태 코드: {}", e.status());
+            log.error("응답 본문: {}", e.contentUTF8()); // warehouse 서버가 보낸 에러 메시지 body
+            String warehouseErrorMessage = e.contentUTF8();
+            throw new ExternalServerException(String.format("창고 서버 처리 실패: %s", warehouseErrorMessage));
+        } catch (Exception e) {
+            log.error("예상치 못한 오류 발생: {}", e.getMessage());
+            throw new InternalServerException(e.getMessage());
+        }
+    }
 
     /**
      * 발주 반려

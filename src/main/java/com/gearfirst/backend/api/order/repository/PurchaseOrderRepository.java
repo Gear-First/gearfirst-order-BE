@@ -2,6 +2,7 @@ package com.gearfirst.backend.api.order.repository;
 
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.common.enums.OrderStatus;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder,Lon
 
     //엔지니어용 발주 내역 조회
     List<PurchaseOrder> findByBranchCodeAndEngineerIdOrderByRequestDateDesc(String branchCode, Long engineerId);
+    //Slice<PurchaseOrder> findByBranchCodeAndEngineerIdOrderByRequestDateDesc(String branchCode, Long engineerId);
 
     //대리점 상태 그룹별로 목록 조회
      List<PurchaseOrder> findByBranchCodeAndEngineerIdAndStatusInOrderByRequestDateDesc(String branchCode, Long engineerId, List<OrderStatus> statuses);
