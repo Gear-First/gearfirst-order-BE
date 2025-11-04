@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,9 +35,20 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
     @GetMapping("/test")
-    public ResponseEntity<Map<String, String>> test(@RequestHeader Map<String, String> headers) {
-        // 모든 헤더를 그대로 반환
-        return ResponseEntity.ok(headers);
+    public ResponseEntity<Map<String, String>> test(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Name") String userName,
+            @RequestHeader("X-User-Rank") String rank,
+            @RequestHeader("X-User-Region") String region,
+            @RequestHeader("X-User-WorkType") String workType
+    ) {
+            Map<String, String> result = new HashMap<>();
+            result.put("userId", userId);
+            result.put("username", userName);
+            result.put("rank", rank);
+            result.put("region", region);
+            result.put("workType", workType);
+            return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
