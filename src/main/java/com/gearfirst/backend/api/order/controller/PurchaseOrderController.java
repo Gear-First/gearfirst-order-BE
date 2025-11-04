@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/purchase-orders")
@@ -30,8 +31,13 @@ import java.util.List;
 @Tag(name = "Purchase Order API", description = "발주 요청/조회 API")
 public class PurchaseOrderController {
 
-    private final PurchaseOrderService purchaseOrderService;
 
+    private final PurchaseOrderService purchaseOrderService;
+    @GetMapping("/test")
+    public ResponseEntity<Map<String, String>> test(@RequestHeader Map<String, String> headers) {
+        // 모든 헤더를 그대로 반환
+        return ResponseEntity.ok(headers);
+    }
 
     @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
     @PostMapping
