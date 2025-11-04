@@ -34,8 +34,8 @@ import java.util.Map;
 @Tag(name = "Purchase Order API", description = "발주 요청/조회 API")
 public class PurchaseOrderController {
 
-
     private final PurchaseOrderService purchaseOrderService;
+
     @GetMapping("/test")
     public ResponseEntity<Map<String, String>> test(
             @RequestHeader("X-User-Id") String userId,
@@ -100,16 +100,13 @@ public class PurchaseOrderController {
     @Operation(summary = "본사 발주 상세 조회", description = "발주 상세내역을 조회합니다.")
     @GetMapping("/head/{orderId}")
     public ResponseEntity<ApiResponse<HeadPurchaseOrderDetailResponse>> getPurchaseOrderDetail(
-            @PathVariable Long orderId,
-            @RequestHeader("X-User-Id") String userId,
-            @RequestHeader("X-User-WorkType") String workType,   //
-            @RequestHeader("X-User-Region") String region
+            @PathVariable Long orderId
     ){
         HeadPurchaseOrderDetailResponse response= purchaseOrderService.getPurchaseOrderDetail(orderId);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,response);
     }
 
-    @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 조회합니다.")
+    @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 전체조회, 날짜로 필터링 조회합니다.")
     @GetMapping("/branch")
     public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderDetailResponse>>> getBranchPurchaseOrders(
             @RequestParam String branchCode, @RequestParam Long engineerId,
