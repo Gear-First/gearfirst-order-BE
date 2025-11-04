@@ -21,7 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,18 +39,18 @@ public class PurchaseOrderController {
     @GetMapping("/test")
     public ResponseEntity<Map<String, String>> test(
             @RequestHeader("X-User-Id") String userId,
-            @RequestHeader("X-User-Name") String userName,
-            @RequestHeader("X-User-Rank") String rank,
-            @RequestHeader("X-User-Region") String region,
-            @RequestHeader("X-User-WorkType") String workType
+            @RequestHeader("X-User-Name") String encodedName,
+            @RequestHeader("X-User-Rank") String encodedRank,
+            @RequestHeader("X-User-Region") String encodedRegion,
+            @RequestHeader("X-User-WorkType") String encodedWorkType
     ) {
-            Map<String, String> result = new HashMap<>();
-            result.put("userId", userId);
-            result.put("username", userName);
-            result.put("rank", rank);
-            result.put("region", region);
-            result.put("workType", workType);
-            return ResponseEntity.ok(result);
+        Map<String, String> result = new HashMap<>();
+        result.put("userId", userId);
+        result.put("username", new String(Base64.getDecoder().decode(encodedName), StandardCharsets.UTF_8));
+        result.put("rank", new String(Base64.getDecoder().decode(encodedRank), StandardCharsets.UTF_8));
+        result.put("region", new String(Base64.getDecoder().decode(encodedRegion), StandardCharsets.UTF_8));
+        result.put("workType", new String(Base64.getDecoder().decode(encodedWorkType), StandardCharsets.UTF_8));
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
@@ -98,7 +100,10 @@ public class PurchaseOrderController {
     @Operation(summary = "본사 발주 상세 조회", description = "발주 상세내역을 조회합니다.")
     @GetMapping("/head/{orderId}")
     public ResponseEntity<ApiResponse<HeadPurchaseOrderDetailResponse>> getPurchaseOrderDetail(
-            @PathVariable Long orderId
+            @PathVariable Long orderId,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-WorkType") String workType,   //
+            @RequestHeader("X-User-Region") String region
     ){
         HeadPurchaseOrderDetailResponse response= purchaseOrderService.getPurchaseOrderDetail(orderId);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,response);
