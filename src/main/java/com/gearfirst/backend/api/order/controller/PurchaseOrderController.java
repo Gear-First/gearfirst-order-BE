@@ -8,6 +8,7 @@ import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
 import com.gearfirst.backend.common.dto.response.PageResponse;
+import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,7 +63,7 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.REQUEST_PURCHASE_SUCCESS, response);
     }
 
-    @Operation(summary = "본사 발주 요청 건 전체 조회", description = "대리점이 요청한 발주 내역을 전체조회 또는 날짜/대리점이름/부품이름으로 필터링하여  조회합니다.")
+    @Operation(summary = "본사 발주 요청 건 전체 조회", description = "대리점이 요청한 발주 내역을 전체조회 또는 날짜/대리점이름/발부번호로 필터링하여  조회합니다.")
     @GetMapping("/head/orders/pending")
     public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> getPendingOrders(
             @RequestParam(required = false)
@@ -70,30 +71,47 @@ public class PurchaseOrderController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 
-            @RequestParam(required = false) String branchCode,
-            @RequestParam(required = false) String partName,
+            @RequestParam(required = false) String search,
 
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ){
         PageResponse<HeadPurchaseOrderResponse> page =
-        purchaseOrderService.getPendingOrders(startDate, endDate, branchCode, partName, pageable);
+        purchaseOrderService.getPendingOrders(startDate, endDate, search, pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
     }
-    @Operation(summary = "본사 발주 처리건 전체 조회", description = "대리점이 요청한 발주 내역을 본사에서 승인/반려 후 전체조회 또는 날짜/대리점이름/부품이름으로 필터링하여  조회합니다.")
-    @GetMapping("/head/orders/other")
-    public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> getOtherOrders(
+    @Operation(summary = "본사 발주 처리건 전체 조회", description = "대리점이 요청한 발주 내역을 본사에서 출고중,승인완료,납품완료 상태의 데이터를 전체조회 또는 날짜/대리점이름/발주번호/상태로 필터링하여  조회합니다.")
+    @GetMapping("/head/orders/processed")
+    public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> getProcessedOrders(
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 
-            @RequestParam(required = false) String branchCode,
-            @RequestParam(required = false) String partName,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
 
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ){
         PageResponse<HeadPurchaseOrderResponse> page =
-                purchaseOrderService.getOtherOrders(startDate, endDate, branchCode, partName, pageable);
+                purchaseOrderService.getProcessedOrders(startDate, endDate, search, status, pageable);
+        return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
+    }
+
+    @Operation(summary = "본사 발주 취소건 전체 조회", description = "대리점이 요청한 발주 내역을 본사에서 반려,취소 상태의 데이터를 전체조회 또는 날짜/대리점이름/발주번호/상태로 필터링하여  조회합니다.")
+    @GetMapping("/head/orders/cancel")
+    public ResponseEntity<ApiResponse<PageResponse<HeadPurchaseOrderResponse>>> getCanceledOrders(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        PageResponse<HeadPurchaseOrderResponse> page =
+                purchaseOrderService.getCancelOrders(startDate, endDate, search, status, pageable);
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_LIST_SUCCESS,page);
     }
 

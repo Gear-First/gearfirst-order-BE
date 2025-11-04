@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -99,6 +100,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
            }
        }
    }
+
     /**
      * 본사용 발주 승인 대기 상태 전체 조회(모든 대리점)
      */
@@ -106,27 +108,68 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Transactional(readOnly = true)
     public PageResponse<HeadPurchaseOrderResponse> getPendingOrders(
             LocalDate startDate, LocalDate endDate,
-            String branchCode, String partName,
+            String searchKeyword,
             Pageable pageable
     ) {
-        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchByStatus(
-                startDate, endDate, branchCode, partName, OrderStatus.PENDING, pageable);
+        List<OrderStatus> status = List.of(OrderStatus.PENDING);
+        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
+                startDate, endDate, searchKeyword, status, pageable);
         return mapToPageResponse(page);
     }
     /**
      * 본사용 승인 대기 상태를 제외한 발주 전체 조회(모든 대리점)
+     * -> 출고중, 승인완료, 납품완료
      */
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<HeadPurchaseOrderResponse> getOtherOrders(
+    public PageResponse<HeadPurchaseOrderResponse> getProcessedOrders(
             LocalDate startDate, LocalDate endDate,
-            String branchCode, String partName,
+            String searchKeyword,
+            String status,
             Pageable pageable
     ) {
-        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchByStatus(
-                startDate, endDate, branchCode, partName, null, pageable);
+        // 기본 상태 세 가지
+        List<OrderStatus> statuses = List.of(OrderStatus.APPROVED, OrderStatus.SHIPPED, OrderStatus.COMPLETED);
+        if (status != null && !status.isBlank()) {
+            // status 문자열을 enum으로 안전하게 변환
+            statuses = Arrays.stream(OrderStatus.values())
+                    .filter(s -> s.name().equalsIgnoreCase(status))
+                    .findFirst()
+                    .map(List::of) // 매칭된 enum을 리스트로 변환
+                    .orElseThrow(() -> new BadRequestException(ErrorStatus.INVALID_STATUS_EXCEPTION.getMessage()));
+        }
+        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
+                startDate, endDate, searchKeyword, statuses, pageable);
         return mapToPageResponse(page);
     }
+    /**
+     * 본사용 승인 대기 상태를 제외한 발주 전체 조회(모든 대리점)
+     * -> 반려,취소
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<HeadPurchaseOrderResponse> getCancelOrders(
+            LocalDate startDate, LocalDate endDate,
+            String searchKeyword,
+            String status,
+            Pageable pageable
+    ) {
+        // 기본 상태 세 가지
+        List<OrderStatus> statuses = List.of(OrderStatus.REJECTED, OrderStatus.CANCELLED);
+        if (status != null && !status.isBlank()) {
+            // status 문자열을 enum으로 안전하게 변환
+            statuses = Arrays.stream(OrderStatus.values())
+                    .filter(s -> s.name().equalsIgnoreCase(status))
+                    .findFirst()
+                    .map(List::of) // 매칭된 enum을 리스트로 변환
+                    .orElseThrow(() -> new BadRequestException(ErrorStatus.INVALID_STATUS_EXCEPTION.getMessage()));
+        }
+        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
+                startDate, endDate, searchKeyword, statuses, pageable);
+        return mapToPageResponse(page);
+    }
+
+
     // 공통 변환
     private PageResponse<HeadPurchaseOrderResponse> mapToPageResponse(Page<PurchaseOrder> page) {
         List<HeadPurchaseOrderResponse> content = page.getContent().stream()

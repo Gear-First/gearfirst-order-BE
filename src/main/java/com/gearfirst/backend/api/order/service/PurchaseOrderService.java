@@ -6,6 +6,7 @@ import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.common.dto.response.PageResponse;
+import com.gearfirst.backend.common.enums.OrderStatus;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -14,19 +15,24 @@ import java.util.List;
 public interface PurchaseOrderService {
     //대리점 발주 요청 생성
     PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request);
-
-    //본사용 발주 전체 조회(모든 대리점)-승인 대기 상태
     PageResponse<HeadPurchaseOrderResponse> getPendingOrders(
             LocalDate startDate, LocalDate endDate,
-            String branchCode, String partName,
+            String searchKeyword,
             Pageable pageable
     );
-     //본사용 전체 조회(모든 대리점)-나머지 상태
-     PageResponse<HeadPurchaseOrderResponse> getOtherOrders(
-             LocalDate startDate, LocalDate endDate,
-             String branchCode, String partName,
-             Pageable pageable
-     );
+
+    PageResponse<HeadPurchaseOrderResponse> getProcessedOrders(
+            LocalDate startDate, LocalDate endDate,
+            String searchKeyword,
+            String status,
+            Pageable pageable
+    );
+    PageResponse<HeadPurchaseOrderResponse> getCancelOrders(
+            LocalDate startDate, LocalDate endDate,
+            String searchKeyword,
+            String status,
+            Pageable pageable
+    );
      //본사용 발주 상세 조회
      HeadPurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId);
 
