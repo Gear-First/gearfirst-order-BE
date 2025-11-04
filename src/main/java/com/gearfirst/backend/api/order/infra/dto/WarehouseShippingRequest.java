@@ -31,8 +31,8 @@ public class WarehouseShippingRequest {
                 .toList();
 
         return new WarehouseShippingRequest(
-                order.getBranchCode(),          // branchName
-                order.getWarehouseCode(),       // warehouseCode
+                order.getOrganizationCode(),          // branchName
+                order.getDestinationCode(),       // warehouseCode
                 order.getRequestDate().atOffset(ZoneOffset.ofHours(9)).toString(),   // requestedAt
                 order.getProcessedDate().atOffset(ZoneOffset.ofHours(9)).toString(),  // expectedShipDate
                 order.getNote(),            // remark

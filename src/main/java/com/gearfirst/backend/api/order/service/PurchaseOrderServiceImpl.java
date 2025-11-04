@@ -26,8 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -317,7 +315,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         //발주서 조회
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
-        String code = order.getBranchCode();
+        String code = order.getOrganizationCode();
         //발주 품목 조회
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
 

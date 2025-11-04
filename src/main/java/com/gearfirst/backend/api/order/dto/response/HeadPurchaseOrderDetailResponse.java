@@ -3,7 +3,6 @@ package com.gearfirst.backend.api.order.dto.response;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -36,9 +35,9 @@ public class HeadPurchaseOrderDetailResponse extends PurchaseOrderDetailResponse
                         .map(OrderItemResponse::from)
                         .collect(Collectors.toList()))
                 // 자식(본사 전용) 필드
-                .branchCode(order.getBranchCode())
-                .engineerName(order.getEngineerName())
-                .engineerRole(order.getEngineerRole())
+                .branchCode(order.getOrganizationCode())
+                .engineerName(order.getRequesterName())
+                .engineerRole(order.getRequesterRole())
                 .note(order.getNote())
                 .build();
     }
