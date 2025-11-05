@@ -127,15 +127,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             Pageable pageable
     ) {
         // 기본 상태 세 가지
-        List<OrderStatus> statuses = List.of(OrderStatus.APPROVED, OrderStatus.SHIPPED, OrderStatus.COMPLETED);
-        if (status != null && !status.isBlank()) {
-            // status 문자열을 enum으로 안전하게 변환
-            statuses = Arrays.stream(OrderStatus.values())
-                    .filter(s -> s.name().equalsIgnoreCase(status))
-                    .findFirst()
-                    .map(List::of) // 매칭된 enum을 리스트로 변환
-                    .orElseThrow(() -> new BadRequestException(ErrorStatus.INVALID_STATUS_EXCEPTION.getMessage()));
-        }
+        List<OrderStatus> statuses = parseStatusOrDefault(status, List.of(OrderStatus.APPROVED, OrderStatus.SHIPPED, OrderStatus.COMPLETED));
+
         Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
                 startDate, endDate, searchKeyword, statuses, pageable);
         return mapToPageResponse(page);
@@ -152,19 +145,23 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             String status,
             Pageable pageable
     ) {
-        // 기본 상태 세 가지
-        List<OrderStatus> statuses = List.of(OrderStatus.REJECTED, OrderStatus.CANCELLED);
+
+        List<OrderStatus> statuses = parseStatusOrDefault(status, List.of(OrderStatus.REJECTED, OrderStatus.CANCELLED));
+
+        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
+                startDate, endDate, searchKeyword, statuses, pageable);
+        return mapToPageResponse(page);
+    }
+    //공통 검증 로직
+    private List<OrderStatus> parseStatusOrDefault(String status, List<OrderStatus> defaultStatues) {
         if (status != null && !status.isBlank()) {
             // status 문자열을 enum으로 안전하게 변환
-            statuses = Arrays.stream(OrderStatus.values())
+            return Arrays.stream(OrderStatus.values())
                     .filter(s -> s.name().equalsIgnoreCase(status))
                     .findFirst()
                     .map(List::of) // 매칭된 enum을 리스트로 변환
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.INVALID_STATUS_EXCEPTION.getMessage()));
-        }
-        Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
-                startDate, endDate, searchKeyword, statuses, pageable);
-        return mapToPageResponse(page);
+        }return defaultStatues;
     }
 
 
