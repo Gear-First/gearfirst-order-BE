@@ -27,9 +27,9 @@ public class HeadPurchaseOrderResponse {
                 .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .orderStatus(order.getStatus().name())
-                .branchCode(order.getBranchCode())
-                .engineerName(order.getEngineerName())
-                .engineerRole(order.getEngineerRole())
+                .branchCode(order.getRequesterCode())
+                .engineerName(order.getRequesterName())
+                .engineerRole(order.getRequesterRole())
                 .requestDate(order.getRequestDate())
                 .processedDate(order.getProcessedDate())
                 .build();

@@ -1,7 +1,6 @@
 package com.gearfirst.backend.api.order.entity;
 
 
-import com.gearfirst.backend.api.order.command.ShipmentCommand;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.BadRequestException;
 import com.gearfirst.backend.common.exception.ConflictException;
@@ -11,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.concurrent.ConcurrentException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,17 +44,17 @@ public class PurchaseOrder {
     @Column(name="vehicle_model")
     private String vehicleModel;        //차량 모델
 
-    @Column(name = "branch_code",nullable = false)
-    private String branchCode;
+    @Column(name = "requester_code",nullable = false)
+    private String requesterCode;
 
-    @Column(name="engineer_id", nullable = false)
-    private Long engineerId;            //엔지니어 id
+    @Column(name="requester_id", nullable = false)
+    private Long requesterId;            //요청자 id
 
-    @Column(name="engineer_name", nullable = false)
-    private String engineerName;            //엔지니어이름
+    @Column(name="requester_name", nullable = false)
+    private String requesterName;            //요청자 이름
 
-    @Column(name="engineer_role", nullable = false)
-    private String engineerRole;            //엔지니어 직급
+    @Column(name="requester_role", nullable = false)
+    private String requesterRole;            //요청자 직급
 
     @Column(name="receipt_num")
     private String receiptNum;              //수리 이력 Num
@@ -74,22 +72,22 @@ public class PurchaseOrder {
     @Column(columnDefinition = "text")
     private String note;                    //비고
 
-    @Column(name="warehouse_code")
-    private String warehouseCode;
+    @Column(name="destination_code")
+    private String destinationCode;
 
 
     @Builder
-    public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String branchCode,
-                         Long engineerId,String engineerName, String engineerRole)
+    public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String requesterCode,
+                         Long requesterId, String requesterName, String requesterRole)
     {
         this.requestDate = LocalDateTime.now();
         this.orderNumber = generateOrderNumber(this.requestDate);
         this.vehicleNumber = vehicleNumber;
         this.vehicleModel = vehicleModel;
-        this.engineerId = engineerId;
-        this.engineerName = engineerName;
-        this.engineerRole = engineerRole;
-        this.branchCode = branchCode;
+        this.requesterId = requesterId;
+        this.requesterName = requesterName;
+        this.requesterRole = requesterRole;
+        this.requesterCode = requesterCode;
         this.receiptNum = receiptNum;
         this.status = OrderStatus.PENDING; //기본 상태 승인 대기
         this.totalPrice = 0;
@@ -126,8 +124,10 @@ public class PurchaseOrder {
     }
     //발주 취소
     public void cancel(){
+        if (this.completedDate != null) throw new ConflictException(ErrorStatus.ALREADY_PROCESSED_ORDER_EXCEPTION.getMessage());
         validateStateTransitionCancel(this.status);
         this.status = OrderStatus.CANCELLED;
+        this.completedDate = LocalDateTime.now();
     }
 
     //상태 전이 검증
@@ -136,6 +136,7 @@ public class PurchaseOrder {
             throw new ConflictException(ErrorStatus.INVALID_STATUS_TRANSITION_EXCEPTION.getMessage());
         }
     }
+
     private void validateStateTransitionCancel(OrderStatus status){
         if(status != OrderStatus.PENDING && status != OrderStatus.APPROVED){
             throw new ConflictException(ErrorStatus.CANCEL_NOT_ALLOWED_STATUS_EXCEPTION.getMessage());
@@ -174,7 +175,7 @@ public class PurchaseOrder {
         }
     }
     public void assignWarehouse(String warehouseCode) {
-        this.warehouseCode = warehouseCode;
+        this.destinationCode = warehouseCode;
     }
 
 }

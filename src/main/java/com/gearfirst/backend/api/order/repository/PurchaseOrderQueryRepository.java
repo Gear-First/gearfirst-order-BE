@@ -29,10 +29,10 @@ import static org.springframework.util.StringUtils.hasText;
 public class PurchaseOrderQueryRepository {
     private final JPAQueryFactory query;
 
-    public Page<PurchaseOrder> searchByStatus(
+    public Page<PurchaseOrder> searchOrders(
             LocalDate startDate, LocalDate endDate,
-            String branchCode, String partName,
-            OrderStatus status,
+            String searchKeyword,
+            List<OrderStatus> statuses,
             Pageable pageable
     ) {
         QPurchaseOrder purchaseOrder = QPurchaseOrder.purchaseOrder;
@@ -41,20 +41,22 @@ public class PurchaseOrderQueryRepository {
         //내부적으로 논리식을 담고 있고 and(), or() 등으로 조건을 누적할 수 있음
         BooleanBuilder where = new BooleanBuilder();
 
-        if (status != OrderStatus.PENDING) {
-            // 나머지 상태 전체
-            where.and(purchaseOrder.status.ne(OrderStatus.PENDING));
-        } else {
-            // PENDING만
-            where.and(purchaseOrder.status.eq(OrderStatus.PENDING));
+        //상태 조건
+        if (statuses != null && !statuses.isEmpty()) {
+            where.and(purchaseOrder.status.in(statuses));
         }
-
-        if(hasText(partName)) where.and(orderItem.partName.containsIgnoreCase(partName));
 
         if(startDate != null) where.and(purchaseOrder.requestDate.goe(startDate.atStartOfDay())); //requestDate >= startDate
         if(endDate != null) where.and(purchaseOrder.requestDate.loe(endDate.atTime(23,59,59))); //requestDate <= endDate 23:59:59
-        if(hasText(branchCode)) where.and(purchaseOrder.branchCode.containsIgnoreCase(branchCode)); //부분일치, 대소문자 무시 검색
 
+        // 검색창 하나 → destinationCode OR orderNumber
+        if (hasText(searchKeyword)) {
+            BooleanBuilder keyword = new BooleanBuilder();
+            keyword.or(purchaseOrder.requesterCode.containsIgnoreCase(searchKeyword));
+            keyword.or(purchaseOrder.destinationCode.containsIgnoreCase(searchKeyword));
+            keyword.or(purchaseOrder.orderNumber.containsIgnoreCase(searchKeyword));
+            where.and(keyword);
+        }
         List<PurchaseOrder> content = query
                 .selectDistinct(purchaseOrder) //1:N 조인 시 중복 제거
                 .from(orderItem)        //기준 테이블

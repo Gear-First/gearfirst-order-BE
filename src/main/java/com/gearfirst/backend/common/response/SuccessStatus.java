@@ -21,6 +21,7 @@ public enum SuccessStatus {
     CREATE_SAMPLE_SUCCESS(HttpStatus.CREATED, "샘플 등록 성공"),
     REQUEST_PURCHASE_SUCCESS(HttpStatus.CREATED, "발주 요청이 성공적으로 접수되었습니다."),
     APPROVE_PURCHASE_SUCCESS(HttpStatus.CREATED, "발주가 승인되었습니다."),
+    SHIPPED_PURCHASE_SUCCESS(HttpStatus.CREATED, "발주가 출고되었습니다."),
     CANCEL_PURCHASE_SUCCESS(HttpStatus.CREATED, "발주가 취소되었습니다."),
     REJECT_PURCHASE_SUCCESS(HttpStatus.CREATED, "발주가 반려되었습니다."),
     ;
