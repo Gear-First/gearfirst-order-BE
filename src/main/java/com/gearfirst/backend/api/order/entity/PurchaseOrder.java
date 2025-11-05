@@ -44,8 +44,8 @@ public class PurchaseOrder {
     @Column(name="vehicle_model")
     private String vehicleModel;        //차량 모델
 
-    @Column(name = "organization_code",nullable = false)
-    private String organizationCode;
+    @Column(name = "requester_code",nullable = false)
+    private String requesterCode;
 
     @Column(name="requester_id", nullable = false)
     private Long requesterId;            //요청자 id
@@ -72,12 +72,12 @@ public class PurchaseOrder {
     @Column(columnDefinition = "text")
     private String note;                    //비고
 
-    @Column(name="destinationCode_code")
+    @Column(name="destination_code")
     private String destinationCode;
 
 
     @Builder
-    public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String organizationCode,
+    public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String requesterCode,
                          Long requesterId, String requesterName, String requesterRole)
     {
         this.requestDate = LocalDateTime.now();
@@ -87,7 +87,7 @@ public class PurchaseOrder {
         this.requesterId = requesterId;
         this.requesterName = requesterName;
         this.requesterRole = requesterRole;
-        this.organizationCode = organizationCode;
+        this.requesterCode = requesterCode;
         this.receiptNum = receiptNum;
         this.status = OrderStatus.PENDING; //기본 상태 승인 대기
         this.totalPrice = 0;

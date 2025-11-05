@@ -35,7 +35,7 @@ public class HeadPurchaseOrderDetailResponse extends PurchaseOrderDetailResponse
                         .map(OrderItemResponse::from)
                         .collect(Collectors.toList()))
                 // 자식(본사 전용) 필드
-                .branchCode(order.getOrganizationCode())
+                .branchCode(order.getRequesterCode())
                 .engineerName(order.getRequesterName())
                 .engineerRole(order.getRequesterRole())
                 .note(order.getNote())

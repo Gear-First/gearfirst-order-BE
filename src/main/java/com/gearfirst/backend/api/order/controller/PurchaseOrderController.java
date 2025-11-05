@@ -54,7 +54,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "발주 요청 생성", description = "대리점이 본사로 발주 요청을 보냅니다.")
+    @Operation(summary = "발주 요청 생성", description = "대리점 또는 창고에서 본사로 발주 요청을 보냅니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<PurchaseOrderResponse>> requestPurchaseOrder(
             @RequestBody PurchaseOrderRequest request
@@ -179,6 +179,14 @@ public class PurchaseOrderController {
         purchaseOrderService.approveOrder(orderId, request.getNote());
         return ApiResponse.success_only(SuccessStatus.APPROVE_PURCHASE_SUCCESS);
     }
+
+    @Operation(summary = "발주 출고일 업데이트", description = "승인된 발주 건을 출고 상태로 변경하고, 출고일(transferDate)을 기록합니다.")
+    @PatchMapping("/{orderId}/ship")
+    public ResponseEntity<ApiResponse<Void>> processShipment(@PathVariable Long orderId){
+        purchaseOrderService.ship(orderId);
+        return ApiResponse.success_only(SuccessStatus.SHIPPED_PURCHASE_SUCCESS);
+    }
+
     @Operation(summary = "발주 반려", description = "본사에서 발주를 반려합니다.")
     @PatchMapping("/{orderId}/reject")
     public ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long orderId, @RequestBody NoteRequest request){
