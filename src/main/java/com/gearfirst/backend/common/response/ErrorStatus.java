@@ -14,6 +14,7 @@ public enum ErrorStatus {
     INVALID_DECISION_STATUS_EXCEPTION(HttpStatus.BAD_REQUEST,"승인 또는 반려 상태만 지정할 수 있습니다."),
     SHIPMENT_NOT_ALLOWED_EXCEPTION(HttpStatus.BAD_REQUEST, "승인되지 않은 주문에는 출고를 지시를 생성할 수 없습니다."),
     INVALID_STATUS_EXCEPTION(HttpStatus.BAD_REQUEST,"유효하지 않은 상태값입니다."),
+    INVALID_USER_EXCEPTION(HttpStatus.BAD_REQUEST,"잘못된 사용자 정보 형식입니다. (Base64 디코딩 실패)"),
 
     /** 401 UNAUTHORIZED */
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),

@@ -2,6 +2,8 @@ package com.gearfirst.backend.common.filter;
 
 import com.gearfirst.backend.common.context.UserContext;
 import com.gearfirst.backend.common.context.UserContextHolder;
+import com.gearfirst.backend.common.exception.BadRequestException;
+import com.gearfirst.backend.common.response.ErrorStatus;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
@@ -37,9 +39,16 @@ public class JwtHeaderFilter implements Filter {
         }
     }
     private String decode(String value) {
-        return value != null
-                ? new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8)
-                : null;
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            // 클라이언트에게 400 에러를 보냄
+            throw new BadRequestException(ErrorStatus.INVALID_USER_EXCEPTION.getMessage());
+        }
     }
 
 }
