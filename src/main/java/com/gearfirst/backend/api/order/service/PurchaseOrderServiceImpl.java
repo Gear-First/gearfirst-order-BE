@@ -193,7 +193,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrders(
-            String requesterCode, Long engineerId,
+            String requesterCode, Long requesterId,
             LocalDate startDate, LocalDate endDate,
             Pageable pageable
     ) {
@@ -201,9 +201,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         if(startDate != null && endDate != null){
             orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndRequestDateBetweenOrderByRequestDateDesc(
-                    requesterCode, engineerId, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+                    requesterCode, requesterId, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
         } else {
-            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdOrderByRequestDateDesc(requesterCode, engineerId, pageable);
+            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdOrderByRequestDateDesc(requesterCode, requesterId, pageable);
         }
 
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
@@ -296,8 +296,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 대리점에서 발주 취소
      */
     @Override
-    public void cancelBranchOrder(Long orderId, String requesterCode, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,engineerId)
+    public void cancelBranchOrder(Long orderId, String requesterCode, Long requesterId){
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,requesterId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         //상태 변경
         order.cancel();
