@@ -21,10 +21,10 @@ public class JwtHeaderFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) servletRequest;
 
         String userId = httpReq.getHeader("X-User-Id");
-        String name = httpReq.getHeader("X-User-Name");
-        String rank = httpReq.getHeader("X-User-Rank");
-        String region = httpReq.getHeader("X-User-Region");
-        String workType = httpReq.getHeader("X-User-WorkType");
+        String name = decode(httpReq.getHeader("X-User-Name"));
+        String rank = decode(httpReq.getHeader("X-User-Rank"));
+        String region = decode(httpReq.getHeader("X-User-Region"));
+        String workType = decode(httpReq.getHeader("X-User-WorkType"));
 
         if (userId != null) {
             UserContextHolder.set(new UserContext(userId, name, rank, region, workType));
