@@ -5,6 +5,8 @@ import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderDetailRespo
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
+import com.gearfirst.backend.common.annotation.CurrentUser;
+import com.gearfirst.backend.common.context.UserContext;
 import com.gearfirst.backend.common.dto.response.PageResponse;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import org.springframework.data.domain.Pageable;
@@ -51,7 +53,7 @@ public interface PurchaseOrderService {
     PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String branchCode, Long engineerId);
 
     //대리점 발주 취소
-    void cancelBranchOrder(Long orderId, String branchCode, Long engineerId);
+    void cancelBranchOrder(UserContext user, Long orderId);
     //발주 승인
     void approveOrder(Long orderId,String note);
     //출고날짜 업데이트

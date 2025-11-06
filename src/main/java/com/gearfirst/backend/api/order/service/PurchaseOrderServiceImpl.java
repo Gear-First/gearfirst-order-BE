@@ -12,6 +12,9 @@ import com.gearfirst.backend.api.order.infra.dto.WarehouseShippingRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderQueryRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
+import com.gearfirst.backend.common.annotation.CurrentUser;
+import com.gearfirst.backend.common.context.UserContext;
+import com.gearfirst.backend.common.context.UserContextHolder;
 import com.gearfirst.backend.common.dto.response.PageResponse;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.*;
@@ -282,8 +285,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 대리점에서 발주 취소
      */
     @Override
-    public void cancelBranchOrder(Long orderId, String requesterCode, Long requesterId){
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,requesterId)
+    public void cancelBranchOrder(UserContext user, Long orderId){
+        Long userId = Long.parseLong(user.getUserId());
+        String workType = user.getWorkType();
+        String region = user.getRegion();
+        String requesterCode = region + workType;
+
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,userId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         //상태 변경
         order.cancel();
@@ -344,7 +352,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 발주 반려
      */
     @Override
-    public void rejectOrder(Long orderId, String note) {
+    public void rejectOrder( Long orderId, String note) {
         //발주서 조회
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
