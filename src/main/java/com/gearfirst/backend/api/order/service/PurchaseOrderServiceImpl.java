@@ -249,7 +249,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 
     /**
-     + 수리 완료 버튼 클릭 시 발주 부품 조회
+     + 수리 접수내역 조회 시 발주 부품 조회
      + */
     @Transactional(readOnly = true)
     @Override
