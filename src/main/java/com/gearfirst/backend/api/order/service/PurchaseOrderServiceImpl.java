@@ -221,7 +221,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(
-            String requesterCode, Long engineerId, String filterType,
+            String requesterCode, Long requesterId, String filterType,
             LocalDate startDate, LocalDate endDate, Pageable pageable
     ) {
         Slice<PurchaseOrder> orders;
@@ -234,9 +234,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         };
         if(startDate != null && endDate != null){
             orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInAndRequestDateBetweenOrderByRequestDateDesc(
-                    requesterCode, engineerId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+                    requesterCode, requesterId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
         } else {
-            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInOrderByRequestDateDesc(requesterCode, engineerId, statusList, pageable);
+            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInOrderByRequestDateDesc(requesterCode, requesterId, statusList, pageable);
         }
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
                 .map(order -> {
@@ -253,8 +253,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      + */
     @Transactional(readOnly = true)
     @Override
-    public PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long engineerId){
-        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, engineerId);
+    public PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long requesterId){
+        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, requesterId);
         // 부품 목록 조회
         List<OrderItem> items = getOrderItems(order);
 
@@ -284,8 +284,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     @Transactional(readOnly = true)
-    public PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String requesterCode, Long engineerId) {
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,engineerId)
+    public PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String requesterCode, Long requesterId) {
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,requesterId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
