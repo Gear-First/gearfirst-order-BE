@@ -49,10 +49,11 @@ public class PurchaseOrderQueryRepository {
         if(startDate != null) where.and(purchaseOrder.requestDate.goe(startDate.atStartOfDay())); //requestDate >= startDate
         if(endDate != null) where.and(purchaseOrder.requestDate.loe(endDate.atTime(23,59,59))); //requestDate <= endDate 23:59:59
 
-        // 검색창 하나 → branchName OR partName
+        // 검색창 하나 → destinationCode OR orderNumber
         if (hasText(searchKeyword)) {
             BooleanBuilder keyword = new BooleanBuilder();
-            keyword.or(purchaseOrder.branchCode.containsIgnoreCase(searchKeyword));
+            keyword.or(purchaseOrder.requesterCode.containsIgnoreCase(searchKeyword));
+            keyword.or(purchaseOrder.destinationCode.containsIgnoreCase(searchKeyword));
             keyword.or(purchaseOrder.orderNumber.containsIgnoreCase(searchKeyword));
             where.and(keyword);
         }
