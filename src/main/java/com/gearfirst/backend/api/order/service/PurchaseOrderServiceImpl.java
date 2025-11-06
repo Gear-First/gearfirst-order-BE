@@ -12,6 +12,9 @@ import com.gearfirst.backend.api.order.infra.dto.WarehouseShippingRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderQueryRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
+import com.gearfirst.backend.common.annotation.CurrentUser;
+import com.gearfirst.backend.common.context.UserContext;
+import com.gearfirst.backend.common.context.UserContextHolder;
 import com.gearfirst.backend.common.dto.response.PageResponse;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.*;
@@ -193,7 +196,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrders(
-            String requesterCode, Long engineerId,
+            String requesterCode, Long requesterId,
             LocalDate startDate, LocalDate endDate,
             Pageable pageable
     ) {
@@ -201,9 +204,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
         if(startDate != null && endDate != null){
             orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndRequestDateBetweenOrderByRequestDateDesc(
-                    requesterCode, engineerId, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+                    requesterCode, requesterId, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
         } else {
-            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdOrderByRequestDateDesc(requesterCode, engineerId, pageable);
+            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdOrderByRequestDateDesc(requesterCode, requesterId, pageable);
         }
 
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
@@ -221,7 +224,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(
-            String requesterCode, Long engineerId, String filterType,
+            String requesterCode, Long requesterId, String filterType,
             LocalDate startDate, LocalDate endDate, Pageable pageable
     ) {
         Slice<PurchaseOrder> orders;
@@ -234,9 +237,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         };
         if(startDate != null && endDate != null){
             orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInAndRequestDateBetweenOrderByRequestDateDesc(
-                    requesterCode, engineerId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+                    requesterCode, requesterId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
         } else {
-            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInOrderByRequestDateDesc(requesterCode, engineerId, statusList, pageable);
+            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInOrderByRequestDateDesc(requesterCode, requesterId, statusList, pageable);
         }
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
                 .map(order -> {
@@ -270,8 +273,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     @Transactional(readOnly = true)
-    public PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String requesterCode, Long engineerId) {
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,engineerId)
+    public PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String requesterCode, Long requesterId) {
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,requesterId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
@@ -282,8 +285,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 대리점에서 발주 취소
      */
     @Override
-    public void cancelBranchOrder(Long orderId, String requesterCode, Long engineerId){
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,engineerId)
+    public void cancelBranchOrder(UserContext user, Long orderId){
+        Long userId = Long.parseLong(user.getUserId());
+        String workType = user.getWorkType();
+        String region = user.getRegion();
+        String requesterCode = region + workType;
+
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,userId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         //상태 변경
         order.cancel();
@@ -344,7 +352,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 발주 반려
      */
     @Override
-    public void rejectOrder(Long orderId, String note) {
+    public void rejectOrder( Long orderId, String note) {
         //발주서 조회
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
