@@ -253,30 +253,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      + */
     @Transactional(readOnly = true)
     @Override
-    public PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String branchCode, Long requesterId){
-        PurchaseOrder order = findCompletedOrder(receiptNum, vehicleNumber, branchCode, requesterId);
-        // 부품 목록 조회
-        List<OrderItem> items = getOrderItems(order);
-
-        return PurchaseOrderResponse.from(order, items);
-    }
-
-    /**
-     * 공통: 발주 조회 메서드
-     */
-    private PurchaseOrder findCompletedOrder(String receiptNum, String vehicleNumber, String requesterCode, Long engineerId) {
-        return purchaseOrderRepository
-                .findByVehicleNumberAndRequesterCodeAndRequesterIdAndStatusAndReceiptNum(
-                        vehicleNumber, requesterCode, engineerId, OrderStatus.COMPLETED, receiptNum
+    public PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String requesterCode, Long requesterId){
+        PurchaseOrder order = purchaseOrderRepository
+                .findByVehicleNumberAndRequesterCodeAndRequesterIdAndReceiptNum(
+                        vehicleNumber, requesterCode, requesterId,  receiptNum
                 )
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
-    }
+        // 부품 목록 조회
+        List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(order.getId());
 
-    /**
-     *  공통: 부품 목록 조회 메서드
-     */
-    private List<OrderItem> getOrderItems(PurchaseOrder order) {
-        return orderItemRepository.findByPurchaseOrder_Id(order.getId());
+        return PurchaseOrderResponse.from(order, items);
     }
 
     /**
