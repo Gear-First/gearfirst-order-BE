@@ -165,7 +165,7 @@ public class PurchaseOrderController {
         return ApiResponse.success_only(SuccessStatus.CANCEL_PURCHASE_SUCCESS);
     }
 
-    @Operation(summary = "대리점에서 수리 완료 시 발주한 부품 목록 조회", description = "대리점에서 수리 완료 버튼 클릭 시 해당 발주의 부품 목록을 반환합니다.")
+    @Operation(summary = "수리 접수내역 조회 시 발주 부품 조회", description = "대리점에서 수리내역 조회 시 해당 발주의 부품 목록을 반환합니다.")
     @GetMapping("/repair/parts/{receiptNum}/{vehicleNumber}")
     public ResponseEntity<ApiResponse<PurchaseOrderResponse>> getCompleteRepairParts(@PathVariable String receiptNum, @PathVariable String vehicleNumber, @RequestParam String branchCode, @RequestParam Long engineerId ){
         PurchaseOrderResponse response = purchaseOrderService.getCompleteRepairPartsList(receiptNum,vehicleNumber,branchCode,engineerId);
