@@ -19,7 +19,7 @@ public class WarehouseShippingRequest {
     private String expectedShipDate; //발주 승인, 출고 지정일
     private String remark;              //비고
     private List<WarehouseShippingLineRequest> lines;      //부품 리스트
-    private String shippingNo;              //TODO: 출고번호 뺄예정
+    private String shippingNo;              //발주 id
 
     public static WarehouseShippingRequest from(PurchaseOrder order,List<OrderItem> items) {
         List<WarehouseShippingLineRequest> lines = items.stream()
@@ -37,7 +37,7 @@ public class WarehouseShippingRequest {
                 order.getProcessedDate().atOffset(ZoneOffset.ofHours(9)).toString(),  // expectedShipDate
                 order.getNote(),            // remark
                 lines,
-                null
+                order.getId().toString()       //발주 id
         );
     }
 }
