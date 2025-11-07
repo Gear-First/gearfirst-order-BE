@@ -19,6 +19,9 @@ public enum ErrorStatus {
     /** 401 UNAUTHORIZED */
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
 
+    /** 403 NOT_FOUND */
+    NOT_ALLOW_ACCESS(HttpStatus.FORBIDDEN,"접근 권한이 없습니다."),
+
     /** 404 NOT_FOUND */
     NOT_FOUND_MEMBER_EXCEPTION(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 입니다."),
     NOT_FOUND_ORDER_EXCEPTION(HttpStatus.NOT_FOUND, "해당 발주를 찾을 수 없습니다.."),

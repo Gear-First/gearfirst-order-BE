@@ -75,9 +75,6 @@ public class PurchaseOrder {
     @Column(name="destination_code")
     private String destinationCode;
 
-    @Column(name="note_id")
-    private String noteId;              //출고 번호
-
 
     @Builder
     public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String requesterCode,

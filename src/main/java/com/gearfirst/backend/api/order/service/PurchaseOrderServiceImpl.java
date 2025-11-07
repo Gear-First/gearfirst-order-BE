@@ -286,6 +286,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     public void cancelBranchOrder(UserContext user, Long orderId){
+        if (user == null || user.getUserId() == null) {
+            throw new UnAuthorizedException(ErrorStatus.USER_UNAUTHORIZED.getMessage());
+        }
         Long userId = Long.parseLong(user.getUserId());
         String workType = user.getWorkType();
         String region = user.getRegion();
@@ -352,7 +355,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 발주 반려
      */
     @Override
-    public void rejectOrder( Long orderId, String note) {
+    public void rejectOrder(Long orderId, String note) {
         //발주서 조회
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
