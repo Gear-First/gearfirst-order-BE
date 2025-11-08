@@ -194,7 +194,9 @@ public class PurchaseOrderController {
 
     @Operation(summary = "발주 반려", description = "본사에서 발주를 반려합니다.")
     @PatchMapping("/{orderId}/reject")
-    public ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long orderId, @RequestBody NoteRequest request){
+    public ResponseEntity<ApiResponse<Void>> reject(
+            @PathVariable Long orderId, @RequestBody NoteRequest request
+    ){
         purchaseOrderService.rejectOrder(orderId, request.getNote());
         return ApiResponse.success_only(SuccessStatus.REJECT_PURCHASE_SUCCESS);
     }
