@@ -19,7 +19,7 @@ public enum ErrorStatus {
     /** 401 UNAUTHORIZED */
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
 
-    /** 403 NOT_FOUND */
+    /** 403 FORBIDDEN*/
     NOT_ALLOW_ACCESS(HttpStatus.FORBIDDEN,"접근 권한이 없습니다."),
 
     /** 404 NOT_FOUND */
