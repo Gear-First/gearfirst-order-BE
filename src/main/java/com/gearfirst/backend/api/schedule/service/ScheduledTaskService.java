@@ -34,8 +34,7 @@ public class ScheduledTaskService {
             log.warn("[중복 예약] orderId={} 이미 등록된 예약이 있습니다.", orderId);
             return;
         }
-        //LocalDateTime runAt = LocalDateTime.now().plusDays(3);
-        LocalDateTime runAt = LocalDateTime.now().plusMinutes(3);
+        LocalDateTime runAt = LocalDateTime.now().plusDays(3);
 
         ScheduledTask task = ScheduledTask.builder()
                 .orderId(orderId)
