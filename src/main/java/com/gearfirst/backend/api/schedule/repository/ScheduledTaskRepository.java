@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface ScheduledTaskRepository extends JpaRepository<ScheduledTask,Long> {
     List<ScheduledTask> findByStatusInAndRunAtAfter(List<TaskStatus> statuses, LocalDateTime now);
+    List<ScheduledTask> findByStatusInAndRunAtLessThanEqual(List<TaskStatus> statuses, LocalDateTime time);
 
     boolean existsByOrderIdAndStatusIn(Long orderId,List<TaskStatus> statuses );
 }

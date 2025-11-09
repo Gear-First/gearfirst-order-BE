@@ -5,12 +5,15 @@ import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
 import com.gearfirst.backend.api.schedule.entity.ScheduledTask;
 import com.gearfirst.backend.api.schedule.enums.TaskStatus;
 import com.gearfirst.backend.api.schedule.repository.ScheduledTaskRepository;
+import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.NotFoundException;
 import com.gearfirst.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -28,6 +31,7 @@ public class ScheduledTaskService {
     /**
      * 3일 뒤 실행 예약 등록
      */
+    @Transactional
     public void scheduleNewTask(Long orderId) {
         if (scheduledTaskRepository.existsByOrderIdAndStatusIn(orderId,
                 List.of(TaskStatus.PENDING, TaskStatus.RETRYING))) {
@@ -42,8 +46,13 @@ public class ScheduledTaskService {
                 .status(TaskStatus.PENDING)
                 .retryCount(0)
                 .build();
-
-        scheduledTaskRepository.save(task);
+        //db에서 최종 방어
+        try {
+            scheduledTaskRepository.save(task);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("[중복 예약] orderId={} 이미 등록된 예약이 있습니다.", orderId);
+            return;
+        }
         registerTask(task);
     }
 
@@ -60,7 +69,7 @@ public class ScheduledTaskService {
     /**
      * 실제 작업 실행 + 재시도 로직
      */
-    private void executeTask(ScheduledTask task, Long orderId) {
+    public void executeTask(ScheduledTask task, Long orderId) {
         try {
             PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                     .orElseThrow(() -> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
@@ -72,7 +81,7 @@ public class ScheduledTaskService {
             task.setStatus(TaskStatus.SUCCESS);
             task.setErrorMessage(null);
             scheduledTaskRepository.save(task);
-            order.complete();
+            if (order.getStatus() == OrderStatus.SHIPPED) order.complete();
             purchaseOrderRepository.save(order); //Spring의 트랜잭션 프록시 밖의 별도 스레드에서 실행되므로
             log.info("[실행 성공] orderId={}", task.getOrderId());
 
