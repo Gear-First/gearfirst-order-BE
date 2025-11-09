@@ -3,8 +3,8 @@ package com.gearfirst.backend.api.order.service;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
-import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
+import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.WarehouseClient;
@@ -12,9 +12,7 @@ import com.gearfirst.backend.api.order.infra.dto.WarehouseShippingRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderQueryRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderRepository;
-import com.gearfirst.backend.common.annotation.CurrentUser;
 import com.gearfirst.backend.common.context.UserContext;
-import com.gearfirst.backend.common.context.UserContextHolder;
 import com.gearfirst.backend.common.dto.response.PageResponse;
 import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.exception.*;
@@ -46,21 +44,29 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 대리점과 창고에서 발주 요청 생성
      */
     @Override
-    public PurchaseOrderResponse createPurchaseOrder(PurchaseOrderRequest request) {
+    public PurchaseOrderResponse createPurchaseOrder(UserContext user,PurchaseOrderRequest request) {
+        validUser(user);
+        Long userId = Long.parseLong(user.getUserId());
+        String userName = user.getUsername();
+        String role = user.getRank();
+        String workType = user.getWorkType();
+        String region = user.getRegion();
+        String requesterCode = region + workType;
+
          //차량 정보 검증
         validateVehicleInfo(request);
         //발주 엔티티 생성
         PurchaseOrder order = PurchaseOrder.builder()
                 .vehicleNumber(request.getVehicleNumber())
                 .vehicleModel(request.getVehicleModel())
-                .requesterId(request.getRequesterId())
-                .requesterName(request.getRequesterName())
-                .requesterRole(request.getRequesterRole())
-                .requesterCode(request.getRequesterCode())
+                .requesterId(userId)
+                .requesterName(userName)
+                .requesterRole(role)
+                .requesterCode(requesterCode)
                 .receiptNum(request.getReceiptNum())
                 .build();
 
-        //부품 정보 조회
+        //부품 정보
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(i -> {
                     int price = i.getPrice();
@@ -108,10 +114,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<HeadPurchaseOrderResponse> getPendingOrders(
+            UserContext user,
             LocalDate startDate, LocalDate endDate,
             String searchKeyword,
             Pageable pageable
     ) {
+        validUser(user);
+        if(!"본사".equals(user.getWorkType())){
+            throw new UnAuthorizedException(ErrorStatus.NOT_ALLOW_ACCESS.getMessage());
+        }
         List<OrderStatus> status = List.of(OrderStatus.PENDING);
         Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
                 startDate, endDate, searchKeyword, status, pageable);
@@ -124,11 +135,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<HeadPurchaseOrderResponse> getProcessedOrders(
+            UserContext user,
             LocalDate startDate, LocalDate endDate,
             String searchKeyword,
             String status,
             Pageable pageable
     ) {
+        validUser(user);
+        if(!"본사".equals(user.getWorkType())){
+            throw new UnAuthorizedException(ErrorStatus.NOT_ALLOW_ACCESS.getMessage());
+        }
         // 기본 상태 세 가지
         List<OrderStatus> statuses = parseStatusOrDefault(status, List.of(OrderStatus.APPROVED, OrderStatus.SHIPPED, OrderStatus.COMPLETED));
 
@@ -143,12 +159,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<HeadPurchaseOrderResponse> getCancelOrders(
+            UserContext user,
             LocalDate startDate, LocalDate endDate,
             String searchKeyword,
             String status,
             Pageable pageable
     ) {
-
+        validUser(user);
+        if(!"본사".equals(user.getWorkType())){
+            throw new UnAuthorizedException(ErrorStatus.NOT_ALLOW_ACCESS.getMessage());
+        }
         List<OrderStatus> statuses = parseStatusOrDefault(status, List.of(OrderStatus.REJECTED, OrderStatus.CANCELLED));
 
         Page<PurchaseOrder> page = purchaseOrderQueryRepository.searchOrders(
@@ -184,7 +204,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     @Transactional(readOnly = true)
-    public HeadPurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId) {
+    public HeadPurchaseOrderDetailResponse getHeadPurchaseOrderDetail(UserContext user, Long orderId) {
+        validUser(user);
+        if(!"본사".equals(user.getWorkType())){
+            throw new UnAuthorizedException(ErrorStatus.NOT_ALLOW_ACCESS.getMessage());
+        }
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
@@ -196,17 +220,23 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrders(
-            String requesterCode, Long requesterId,
+            UserContext user,
             LocalDate startDate, LocalDate endDate,
             Pageable pageable
     ) {
+        validUser(user);
+        Long userId = Long.parseLong(user.getUserId());
+        String workType = user.getWorkType();
+        String region = user.getRegion();
+        String requesterCode = region + workType;
+
         Slice<PurchaseOrder> orders;
 
         if(startDate != null && endDate != null){
             orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndRequestDateBetweenOrderByRequestDateDesc(
-                    requesterCode, requesterId, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+                    requesterCode, userId, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
         } else {
-            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdOrderByRequestDateDesc(requesterCode, requesterId, pageable);
+            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdOrderByRequestDateDesc(requesterCode, userId, pageable);
         }
 
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
@@ -224,9 +254,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(
-            String requesterCode, Long requesterId, String filterType,
+            UserContext user,String filterType,
             LocalDate startDate, LocalDate endDate, Pageable pageable
     ) {
+        validUser(user);
+        Long userId = Long.parseLong(user.getUserId());
+        String workType = user.getWorkType();
+        String region = user.getRegion();
+        String requesterCode = region + workType;
+
         Slice<PurchaseOrder> orders;
 
         List<OrderStatus> statusList = switch (filterType.toLowerCase()){
@@ -237,9 +273,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         };
         if(startDate != null && endDate != null){
             orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInAndRequestDateBetweenOrderByRequestDateDesc(
-                    requesterCode, requesterId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
+                    requesterCode, userId, statusList, startDate.atStartOfDay(), endDate.atTime(23,59,59), pageable);
         } else {
-            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInOrderByRequestDateDesc(requesterCode, requesterId, statusList, pageable);
+            orders = purchaseOrderRepository.findByRequesterCodeAndRequesterIdAndStatusInOrderByRequestDateDesc(requesterCode, userId, statusList, pageable);
         }
         List<PurchaseOrderDetailResponse> content = orders.getContent().stream()
                 .map(order -> {
@@ -256,10 +292,18 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      + */
     @Transactional(readOnly = true)
     @Override
-    public PurchaseOrderResponse getCompleteRepairPartsList(String receiptNum, String vehicleNumber, String requesterCode, Long requesterId){
+    public PurchaseOrderResponse getCompleteRepairPartsList(
+            UserContext user,String receiptNum, String vehicleNumber
+    ){
+        validUser(user);
+        Long userId = Long.parseLong(user.getUserId());
+        String workType = user.getWorkType();
+        String region = user.getRegion();
+        String requesterCode = region + workType;
+
         PurchaseOrder order = purchaseOrderRepository
                 .findByVehicleNumberAndRequesterCodeAndRequesterIdAndReceiptNum(
-                        vehicleNumber, requesterCode, requesterId,  receiptNum
+                        vehicleNumber, requesterCode, userId,  receiptNum
                 )
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         // 부품 목록 조회
@@ -273,8 +317,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      */
     @Override
     @Transactional(readOnly = true)
-    public PurchaseOrderDetailResponse getPurchaseOrderDetail(Long orderId, String requesterCode, Long requesterId) {
-        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,requesterId)
+    public PurchaseOrderDetailResponse getPurchaseOrderDetail(
+            UserContext user, Long orderId
+    ) {
+        validUser(user);
+        Long userId = Long.parseLong(user.getUserId());
+        String workType = user.getWorkType();
+        String region = user.getRegion();
+        String requesterCode = region + workType;
+
+        PurchaseOrder order = purchaseOrderRepository.findByIdAndRequesterCodeAndRequesterId(orderId,requesterCode,userId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
 
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
@@ -282,13 +334,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     }
 
     /**
-     * 대리점에서 발주 취소
+     * 대리점과 창고에서 발주 취소
      */
     @Override
     public void cancelBranchOrder(UserContext user, Long orderId){
-        if (user == null || user.getUserId() == null) {
-            throw new UnAuthorizedException(ErrorStatus.USER_UNAUTHORIZED.getMessage());
-        }
+        validUser(user);
         Long userId = Long.parseLong(user.getUserId());
         String workType = user.getWorkType();
         String region = user.getRegion();
@@ -302,10 +352,15 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
     /**
      * 발주 승인(대리점 -> 출고요청 또는 창고 -> 입고요청)
+     * TODO: 지금은 출고 요청만 됨
      */
     @Override
     @Transactional
-    public void approveOrder(Long orderId,String note) {
+    public void approveOrder(UserContext user, Long orderId,String note) {
+        validUser(user);
+        if(!"본사".equals(user.getWorkType())){
+            throw new UnAuthorizedException(ErrorStatus.NOT_ALLOW_ACCESS.getMessage());
+        }
         //발주서 조회
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
@@ -343,7 +398,11 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 발주 출고날짜 업데이트
      */
     @Override
-    public void ship(Long orderId) {
+    public void ship(UserContext user, Long orderId) {
+        validUser(user);
+        if(!"창고".equals(user.getWorkType())){
+            throw new UnAuthorizedException(ErrorStatus.NOT_ALLOW_ACCESS.getMessage());
+        }
         //발주서 조회
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
@@ -355,12 +414,22 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
      * 발주 반려
      */
     @Override
-    public void rejectOrder(Long orderId, String note) {
+    public void rejectOrder(UserContext user, Long orderId, String note) {
+        validUser(user);
+        if(!"본사".equals(user.getWorkType())){
+            throw new UnAuthorizedException(ErrorStatus.NOT_ALLOW_ACCESS.getMessage());
+        }
         //발주서 조회
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         order.updateNote(note);
         //상태변경
         order.decide(OrderStatus.REJECTED);
+    }
+
+    private void validUser(UserContext user) {
+        if (user == null || user.getUserId() == null) {
+            throw new UnAuthorizedException(ErrorStatus.USER_UNAUTHORIZED.getMessage());
+        }
     }
 }
