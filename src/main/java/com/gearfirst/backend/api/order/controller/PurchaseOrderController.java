@@ -7,10 +7,10 @@ import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.service.PurchaseOrderService;
+import com.gearfirst.backend.api.schedule.service.ScheduledTaskService;
 import com.gearfirst.backend.common.annotation.CurrentUser;
 import com.gearfirst.backend.common.context.UserContext;
 import com.gearfirst.backend.common.dto.response.PageResponse;
-import com.gearfirst.backend.common.enums.OrderStatus;
 import com.gearfirst.backend.common.response.ApiResponse;
 import com.gearfirst.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +38,7 @@ import java.util.Map;
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+    private final ScheduledTaskService scheduledTaskService;
 
     @GetMapping("/test")
     public ResponseEntity<Map<String, String>> test(
@@ -189,6 +190,7 @@ public class PurchaseOrderController {
     @PatchMapping("/{orderId}/ship")
     public ResponseEntity<ApiResponse<Void>> processShipment(@PathVariable Long orderId){
         purchaseOrderService.ship(orderId);
+        scheduledTaskService.scheduleNewTask(orderId);
         return ApiResponse.success_only(SuccessStatus.SHIPPED_PURCHASE_SUCCESS);
     }
 
