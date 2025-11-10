@@ -11,6 +11,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -21,11 +23,11 @@ public class SchedulerInitializer implements ApplicationRunner {
     private final ScheduledTaskService scheduledTaskService;
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
         List<ScheduledTask> pendingTasks =
                 scheduledTaskRepository.findByStatusInAndRunAtLessThanEqual(
                         List.of(TaskStatus.PENDING, TaskStatus.RETRYING, TaskStatus.FAILED),
-                        LocalDateTime.now()
+                        ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime()
                 );
         //위에서 불러온 예약 대상 리스트(pendingTasks) 를 하나씩 순회하며 각 예약을 TaskScheduler.schedule()로 다시 등록
         for (ScheduledTask task : pendingTasks) {
