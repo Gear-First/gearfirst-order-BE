@@ -1,5 +1,6 @@
 package com.gearfirst.backend.api.order.service;
 
+import com.gearfirst.backend.api.order.dto.NotificationDto;
 import com.gearfirst.backend.api.order.dto.request.PurchaseOrderRequest;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderDetailResponse;
 import com.gearfirst.backend.api.order.dto.response.HeadPurchaseOrderResponse;
@@ -21,6 +22,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
     private final OrderItemRepository orderItemRepository;
     private final WarehouseClient warehouseClient; // Feign Client (warehouse-service 연결)
     private final PurchaseOrderQueryRepository purchaseOrderQueryRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
     /**
@@ -84,6 +87,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         //  저장
         purchaseOrderRepository.save(order);
         orderItemRepository.saveAll(orderItems);
+
+        String topic = "notification";
+        NotificationDto n = NotificationDto.builder()
+                .id(1L)
+                .eventId(request.getReceiptNum())
+                .type("발주 요청 등록")
+                .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 등록되었습니다.")
+                .receiver("본사")
+                .build();
+
+        kafkaTemplate.send(topic, n);
 
         return PurchaseOrderResponse.from(order, orderItems);
    }
@@ -348,6 +362,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         //상태 변경
         order.cancel();
+
+        String topic = "notification";
+        NotificationDto n = NotificationDto.builder()
+                .id(1L)
+                .eventId(orderId.toString())
+                .type("발주 요청 취소")
+                .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 취소되었습니다.")
+                .receiver("본사")
+                .build();
+
+        kafkaTemplate.send(topic, n);
     }
 
     /**
@@ -382,6 +407,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
             //warehouse 서비스로 전달
             warehouseClient.create(request);
+
+            String topic = "notification";
+            NotificationDto n = NotificationDto.builder()
+                    .id(1L)
+                    .eventId(request.getOrderId())
+                    .type("발주 요청 승인")
+                    .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 승인되었습니다.")
+                    .receiver("본사")
+                    .build();
+
+            kafkaTemplate.send(topic, n);
         } catch (FeignException e) {
             log.error(" Warehouse 서버 호출 실패!");
             log.error("상태 코드: {}", e.status());
@@ -425,6 +461,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         order.updateNote(note);
         //상태변경
         order.decide(OrderStatus.REJECTED);
+
+        String topic = "notification";
+        NotificationDto n = NotificationDto.builder()
+                .id(1L)
+                .eventId(orderId.toString())
+                .type("발주 요청 반려")
+                .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 반려되었습니다.")
+                .receiver("본사")
+                .build();
+
+        kafkaTemplate.send(topic, n);
     }
 
     private void validUser(UserContext user) {
