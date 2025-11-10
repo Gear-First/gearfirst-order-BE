@@ -40,23 +40,6 @@ public class PurchaseOrderController {
     private final PurchaseOrderService purchaseOrderService;
     private final ScheduledTaskService scheduledTaskService;
 
-    @GetMapping("/test")
-    public ResponseEntity<Map<String, String>> test(
-            @RequestHeader("X-User-Id") String userId,
-            @RequestHeader("X-User-Name") String encodedName,
-            @RequestHeader("X-User-Rank") String encodedRank,
-            @RequestHeader("X-User-Region") String encodedRegion,
-            @RequestHeader("X-User-WorkType") String encodedWorkType
-    ) {
-        Map<String, String> result = new HashMap<>();
-        result.put("userId", userId);
-        result.put("username", new String(Base64.getDecoder().decode(encodedName), StandardCharsets.UTF_8));
-        result.put("rank", new String(Base64.getDecoder().decode(encodedRank), StandardCharsets.UTF_8));
-        result.put("region", new String(Base64.getDecoder().decode(encodedRegion), StandardCharsets.UTF_8));
-        result.put("workType", new String(Base64.getDecoder().decode(encodedWorkType), StandardCharsets.UTF_8));
-        return ResponseEntity.ok(result);
-    }
-
     @Operation(summary = "발주 요청 생성", description = "대리점 또는 창고에서 본사로 발주 요청을 보냅니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<PurchaseOrderResponse>> requestPurchaseOrder(
@@ -130,7 +113,7 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,response);
     }
 
-    @Operation(summary = "대리점 발주 전체 조회", description = "엔지니어가 자신이 등록한 발주 내역을 전체조회, 날짜로 필터링 조회합니다.")
+    @Operation(summary = "대리점&창고 발주 전체 조회", description = "자신이 등록한 발주 내역을 전체조회, 날짜로 필터링 조회합니다.")
     @GetMapping("/branch")
     public ResponseEntity<ApiResponse<PageResponse<PurchaseOrderDetailResponse>>> getBranchPurchaseOrders(
             @CurrentUser UserContext user,
@@ -165,7 +148,7 @@ public class PurchaseOrderController {
         return ApiResponse.success(SuccessStatus.SEND_PURCHASE_DETAIL_SUCCESS,detail);
     }
 
-    @Operation(summary = "대리점에서 발주 취소", description = "대리점에서 승인 대기, 승인 완료의 상태 발주만 취소합니다.")
+    @Operation(summary = "대리점&창고 발주 취소", description = "대리점또는 창고에서 승인 대기, 승인 완료의 상태 발주만 취소합니다.")
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<ApiResponse<Void>> cancelBranchOrder(
             @CurrentUser UserContext user,

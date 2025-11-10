@@ -9,6 +9,7 @@ import com.gearfirst.backend.api.order.dto.response.PurchaseOrderResponse;
 import com.gearfirst.backend.api.order.entity.OrderItem;
 import com.gearfirst.backend.api.order.entity.PurchaseOrder;
 import com.gearfirst.backend.api.order.infra.client.WarehouseClient;
+import com.gearfirst.backend.api.order.infra.dto.ReceivingCreateNoteRequest;
 import com.gearfirst.backend.api.order.infra.dto.WarehouseShippingRequest;
 import com.gearfirst.backend.api.order.repository.OrderItemRepository;
 import com.gearfirst.backend.api.order.repository.PurchaseOrderQueryRepository;
@@ -229,7 +230,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         return HeadPurchaseOrderDetailResponse.from(order, items);
     }
 
-    //엔지니어용 발주 목록 전체 조회
+    //대리점, 창고 발주 목록 전체 조회
     //날짜별로 필터링 되는 목록 전체 조회
     @Override
     @Transactional(readOnly = true)
@@ -263,7 +264,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
     }
 
-    //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
+    //대리점 대리점 상태 그룹별 조회(준비/ 완료 / 취소)
     //페이지네이션
     @Override
     @Transactional(readOnly = true)
@@ -302,7 +303,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
 
     /**
-     + 수리 접수내역 조회 시 발주 부품 조회
+     + 대리점 수리 접수내역 조회 시 발주 부품 조회
      + */
     @Transactional(readOnly = true)
     @Override
@@ -377,7 +378,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
 
     /**
      * 발주 승인(대리점 -> 출고요청 또는 창고 -> 입고요청)
-     * TODO: 지금은 출고 요청만 됨
      */
     @Override
     @Transactional
@@ -398,12 +398,22 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             order.updateNote(note);
             //상태 변경
             order.decide(OrderStatus.APPROVED);
-            //창고지정
-            order.assignWarehouse(code);
-            order.createShipmentCommand();
+            if(order.getRequesterCode().contains("대리점")){
+                //창고지정
+                order.assignWarehouse(code);
+                order.createShipmentCommand();
 
-            //출고 명령 생성 요청(warehouse 서비스로 전송)
-            WarehouseShippingRequest request = WarehouseShippingRequest.from(order,items);
+                //출고 명령 생성 요청(warehouse 서비스로 전송)
+                WarehouseShippingRequest request = WarehouseShippingRequest.from(order,items);
+
+                //warehouse 서비스로 전달
+                warehouseClient.create(request);
+            }
+            else if(order.getRequesterCode().contains("창고")) {
+                ReceivingCreateNoteRequest request = ReceivingCreateNoteRequest.from(order, items);
+                //warehouse 서비스로 전달
+                warehouseClient.create(request);
+            }
 
             //warehouse 서비스로 전달
             warehouseClient.create(request);
@@ -423,7 +433,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             log.error("상태 코드: {}", e.status());
             log.error("응답 본문: {}", e.contentUTF8()); // warehouse 서버가 보낸 에러 메시지 body
             String warehouseErrorMessage = e.contentUTF8();
-            throw new ExternalServerException(String.format("창고 서버 처리 실패: %s", warehouseErrorMessage));
+            throw new ExternalServerException(String.format("warehouse 서버 처리 실패: %s", warehouseErrorMessage));
         } catch (Exception e) {
             log.error("예상치 못한 오류 발생: {}", e.getMessage());
             throw new InternalServerException(e.getMessage());

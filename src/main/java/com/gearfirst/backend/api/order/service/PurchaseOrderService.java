@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 
 public interface PurchaseOrderService {
-    //대리점 발주 요청 생성
+    //대리점&창고 발주 요청 생성
     PurchaseOrderResponse createPurchaseOrder(UserContext user, PurchaseOrderRequest request);
     PageResponse<HeadPurchaseOrderResponse> getPendingOrders(
             UserContext user,
@@ -38,7 +38,7 @@ public interface PurchaseOrderService {
      //본사용 발주 상세 조회
      HeadPurchaseOrderDetailResponse getHeadPurchaseOrderDetail(UserContext user, Long orderId);
 
-     //엔지니어용 발주 목록 전체 조회
+     //대리점 창고 발주 목록 전체 조회
      PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrders(UserContext user, LocalDate startDate, LocalDate endDate, Pageable pageable);
     //대리점 상태 그룹별 조회(준비/ 완료 / 취소)
     PageResponse<PurchaseOrderDetailResponse> getBranchPurchaseOrdersByFilter(
@@ -51,7 +51,7 @@ public interface PurchaseOrderService {
 
     //발주 상세 조회
     PurchaseOrderDetailResponse getPurchaseOrderDetail(UserContext user, Long orderId);
-    //대리점 발주 취소
+    //대리점&창고 발주 취소
     void cancelBranchOrder(UserContext user, Long orderId);
     //발주 승인
     void approveOrder(UserContext user, Long orderId,String note);
