@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -92,7 +93,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         String topic = "notification";
         NotificationDto n = NotificationDto.builder()
                 .id(1L)
-                .eventId(request.getReceiptNum())
+                .eventId(UUID.randomUUID().toString())
                 .type("발주 요청 등록")
                 .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 등록되었습니다.")
                 .receiver("본사")
@@ -367,7 +368,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         String topic = "notification";
         NotificationDto n = NotificationDto.builder()
                 .id(1L)
-                .eventId(orderId.toString())
+                .eventId(UUID.randomUUID().toString())
                 .type("발주 요청 취소")
                 .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 취소되었습니다.")
                 .receiver("본사")
@@ -415,13 +416,10 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
                 warehouseClient.create(request);
             }
 
-            //warehouse 서비스로 전달
-            warehouseClient.create(request);
-
             String topic = "notification";
             NotificationDto n = NotificationDto.builder()
                     .id(1L)
-                    .eventId(request.getOrderId())
+                    .eventId(UUID.randomUUID().toString())
                     .type("발주 요청 승인")
                     .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 승인되었습니다.")
                     .receiver("본사")
@@ -475,7 +473,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         String topic = "notification";
         NotificationDto n = NotificationDto.builder()
                 .id(1L)
-                .eventId(orderId.toString())
+                .eventId(UUID.randomUUID().toString())
                 .type("발주 요청 반려")
                 .message(user.getRegion() + " " + user.getWorkType() + "의 발주 요청이 반려되었습니다.")
                 .receiver("본사")
