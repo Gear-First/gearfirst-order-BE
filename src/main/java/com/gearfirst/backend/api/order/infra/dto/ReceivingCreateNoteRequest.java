@@ -31,7 +31,7 @@ public class ReceivingCreateNoteRequest {
 
         return new ReceivingCreateNoteRequest(
                 order.getRequesterName(),
-                order.getDestinationCode(),       // warehouseCode
+                order.getRequesterCode(),       // warehouseCode
                 order.getRequestDate().atOffset(ZoneOffset.ofHours(9)).toString(),   // requestedAt
                 order.getProcessedDate().atOffset(ZoneOffset.ofHours(9)).toString(),  // expectedShipDate
                 order.getNote(),            // remark
