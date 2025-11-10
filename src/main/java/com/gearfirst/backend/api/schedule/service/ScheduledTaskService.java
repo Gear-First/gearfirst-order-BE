@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class ScheduledTaskService {
             log.warn("[중복 예약] orderId={} 이미 등록된 예약이 있습니다.", orderId);
             return;
         }
-        LocalDateTime runAt = LocalDateTime.now().plusDays(3);
+        LocalDateTime runAt = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime().plusDays(3);
 
         ScheduledTask task = ScheduledTask.builder()
                 .orderId(orderId)
@@ -94,7 +95,7 @@ public class ScheduledTaskService {
 
             if (task.getRetryCount() <= 3) {
                 // 1시간 뒤 재시도
-                LocalDateTime retryAt = LocalDateTime.now().plusHours(1);
+                LocalDateTime retryAt = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime().plusHours(1);
                 task.setStatus(TaskStatus.RETRYING);
                 task.setRunAt(retryAt);
                 scheduledTaskRepository.save(task);

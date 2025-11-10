@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -80,7 +82,7 @@ public class PurchaseOrder {
     public PurchaseOrder(String vehicleNumber, String vehicleModel, String receiptNum, String requesterCode,
                          Long requesterId, String requesterName, String requesterRole)
     {
-        this.requestDate = LocalDateTime.now();
+        this.requestDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
         this.orderNumber = generateOrderNumber(this.requestDate);
         this.vehicleNumber = vehicleNumber;
         this.vehicleModel = vehicleModel;
@@ -107,27 +109,27 @@ public class PurchaseOrder {
 
         validateStateTransition(OrderStatus.PENDING, nextStatus);
         this.status = nextStatus;
-        this.processedDate = LocalDateTime.now();
+        this.processedDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
     }
 
     //출고
     public void ship(){
         validateStateTransition(OrderStatus.APPROVED, OrderStatus.SHIPPED);
         this.status = OrderStatus.SHIPPED;
-        this.transferDate = LocalDateTime.now();
+        this.transferDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
     }
     //납품 완료
     public void complete(){
         validateStateTransition(OrderStatus.SHIPPED, OrderStatus.COMPLETED);
         this.status = OrderStatus.COMPLETED;
-        this.completedDate = LocalDateTime.now();
+        this.completedDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
     }
     //발주 취소
     public void cancel(){
         if (this.completedDate != null) throw new ConflictException(ErrorStatus.ALREADY_PROCESSED_ORDER_EXCEPTION.getMessage());
         validateStateTransitionCancel(this.status);
         this.status = OrderStatus.CANCELLED;
-        this.completedDate = LocalDateTime.now();
+        this.completedDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
     }
 
     //상태 전이 검증
