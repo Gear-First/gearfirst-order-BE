@@ -365,6 +365,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
         PurchaseOrder order = purchaseOrderRepository.findById(orderId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.NOT_FOUND_ORDER_EXCEPTION.getMessage()));
         String code = order.getRequesterCode();
+        String warehouseCode = code.replace("대리점", "창고");
         //발주 품목 조회
         List<OrderItem> items = orderItemRepository.findByPurchaseOrder_Id(orderId);
 
@@ -375,7 +376,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService{
             order.decide(OrderStatus.APPROVED);
             if(order.getRequesterCode().contains("대리점")){
                 //창고지정
-                order.assignWarehouse(code);
+                order.assignWarehouse(warehouseCode);
                 order.createShipmentCommand();
 
                 //출고 명령 생성 요청(warehouse 서비스로 전송)
